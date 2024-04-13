@@ -35,3 +35,12 @@ export fn SDL_CreateRGBSurface(flags: u32,
 	return wrapptr(_SDL_CreateRGBSurface(flags, width, height, depth, Rmask,
 	Gmask, Bmask, Amask))?: *SDL_Surface;
 };
+
+// NB SDL_BlitSurface is aliased to SDL_UpperBlit via a macro in the SDL header
+@symbol("SDL_UpperBlit") fn _SDL_BlitSurface(src: *SDL_Surface,
+	srcrect: nullable *SDL_Rect, dst: *SDL_Surface, dstrect: nullable *SDL_Rect) int;
+
+// Perform a fast surface copy to a destination surface.
+export fn SDL_BlitSurface(src: *SDL_Surface, srcrect: nullable *SDL_Rect, dst: *SDL_Surface, dstrect: nullable *SDL_Rect) (void | error) = {
+	return wrapvoid(_SDL_BlitSurface(src, srcrect, dst, dstrect));
+};

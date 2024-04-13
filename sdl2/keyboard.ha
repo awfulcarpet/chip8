@@ -643,3 +643,13 @@ export fn SDL_GetKeyFromName(name: str) (SDL_Keycode | error) = {
 	};
 	return sym;
 };
+
+@symbol("SDL_GetKeyboardState") fn _SDL_GetKeyboardState(numkeys: *int) *[*]bool;
+
+export fn SDL_GetKeyboardState() []bool = {
+	let numkeys: int = 0;
+	let arr = _SDL_GetKeyboardState(&numkeys);
+	let arr = arr[..numkeys];
+	return arr;
+};
+

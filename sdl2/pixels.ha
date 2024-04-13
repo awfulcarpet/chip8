@@ -1,4 +1,5 @@
 // TODO: Flesh me out
+use types::c;
 
 export type SDL_Color = struct {
 	r: u8,
@@ -38,3 +39,17 @@ export type SDL_PixelFormat = struct {
 };
 
 export def SDL_PIXELFORMAT_ARGB8888: u32 = 0x16362004;
+
+@symbol("SDL_GetPixelFormatName") fn _SDL_GetPixelFormatName(format: u32)
+	const *c::char;
+
+// Get the human readable name of a pixel format.
+export fn SDL_GetPixelFormatName(format: u32) str = {
+	return c::tostr(_SDL_GetPixelFormatName(format))!;
+};
+
+// Map an RGB triple to an opaque pixel value for a given pixel format.
+export @symbol("SDL_MapRGB") fn SDL_MapRGB(format: *SDL_PixelFormat, r: u8, g: u8, b: u8) u32;
+
+// Map an RGBA quadruple to a pixel value for a given pixel format.
+export @symbol("SDL_MapRGBA") fn SDL_MapRGBA(format: *SDL_PixelFormat, r: u8, g: u8, b: u8, a: u8) u32;
