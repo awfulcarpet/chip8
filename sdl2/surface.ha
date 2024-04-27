@@ -36,6 +36,13 @@ export fn SDL_CreateRGBSurface(flags: u32,
 	Gmask, Bmask, Amask))?: *SDL_Surface;
 };
 
+@symbol("SDL_FreeSurface") fn _SDL_FreeSurface(surface: nullable *SDL_Surface) void;
+
+// Free an RGB surface.
+export fn SDL_FreeSurface(surface: nullable *SDL_Surface) void = {
+	_SDL_FreeSurface(surface);
+};
+
 // NB SDL_BlitSurface is aliased to SDL_UpperBlit via a macro in the SDL header
 @symbol("SDL_UpperBlit") fn _SDL_BlitSurface(src: *SDL_Surface,
 	srcrect: nullable *SDL_Rect, dst: *SDL_Surface, dstrect: nullable *SDL_Rect) int;
