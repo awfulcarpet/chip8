@@ -45,3 +45,4 @@ export @symbol("SDL_GL_GetProcAddress") fn SDL_GL_GetProcAddress(
 export @symbol("SDL_GL_SetAttribute") fn SDL_GL_SetAttribute(
 	attr: SDL_GLattr, value: int) *opaque;
 export @symbol("SDL_GL_SwapWindow") fn SDL_GL_SwapWindow(window: *SDL_Window) void;
+export @symbol("SDL_GL_SetSwapInterval") fn SDL_GL_SetSwapInterval(interval: int) bool;
