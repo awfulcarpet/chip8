@@ -46,3 +46,4 @@ export @symbol("SDL_GL_SetAttribute") fn SDL_GL_SetAttribute(
 	attr: SDL_GLattr, value: int) *opaque;
 export @symbol("SDL_GL_SwapWindow") fn SDL_GL_SwapWindow(window: *SDL_Window) void;
 export @symbol("SDL_GL_SetSwapInterval") fn SDL_GL_SetSwapInterval(interval: int) bool;
+export @symbol("SDL_GL_GetDrawableSize") fn SDL_GL_GetDrawableSize(window: *SDL_Window, w: *int, h: *int) void;
