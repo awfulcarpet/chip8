@@ -653,3 +653,5 @@ export fn SDL_GetKeyboardState() []bool = {
 	return arr;
 };
 
+export @symbol("SDL_StartTextInput") fn SDL_StartTextInput(win: *SDL_Window) bool;
+export @symbol("SDL_StopTextInput") fn SDL_StopTextInput(win: *SDL_Window) bool;
