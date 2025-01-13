@@ -67,7 +67,7 @@ export fn rw_from_handle(in: io::handle) *SDL_RWops = {
 		close = &stream_close,
 		type_ = rwops_type::UNKNOWN,
 		...
-	});
+	})!;
 	// Assert that we can cram an io::handle into the SDL_RWops struct
 	static assert(size(io::handle) <= size(nullable *u8) * 2);
 	let ptr = &rw.hidden.unknown.data1: *io::handle;
