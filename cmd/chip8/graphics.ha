@@ -3,6 +3,7 @@ use sdl2::{ SDL_GameControllerAxis, SDL_EventType, SDL_RendererFlags, SDL_Window
 
 def SCREEN_WIDTH = 64;
 def SCREEN_HEIGHT = 32;
+def SCALE = 25;
 
 type graphics = struct {
 	bus: *bus,
@@ -16,9 +17,9 @@ fn graphics::init(bus: *bus) (*graphics | sdl2::error) = {
 		| sdl2::SDL_INIT_GAMECONTROLLER)!;
 	const win = sdl2::SDL_CreateWindow("Hare SDL2 demo",
 		sdl2::SDL_WINDOWPOS_CENTERED, sdl2::SDL_WINDOWPOS_CENTERED,
-		640, 480, SDL_WindowFlags::NONE)?;
+		SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, SDL_WindowFlags::NONE)?;
 	const render = sdl2::SDL_CreateRenderer(win, -1, SDL_RendererFlags::NONE)?;
-	sdl2::SDL_SetRenderDrawColor(render, 255, 255, 255, 0)!;
+	sdl2::SDL_RenderSetScale(render, SCALE: f32, SCALE: f32)?;
 
 	let g = alloc(graphics {
 		bus = bus,
