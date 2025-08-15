@@ -162,16 +162,21 @@ fn drw_vx_vy_nib(cpu: *cpu, opcode: u16) void = {
 	cpu.vf = 0;
 
 	for (let i = 0z; i < n; i += 1) {
-		if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
-			continue;
-		let coord = ((y + i) * SCREEN_WIDTH + x): u16;
 		let sprite = bus::read(cpu.bus, cpu.i + i: u16);
-		let fb = bus::read(cpu.bus, FB + coord);
-		// TODO: check that this algorithm works completely
-		if ((fb & ~sprite) != fb) {
-			cpu.vf = 1;
+		for (let j = 0z; j < 8; j += 1) {
+			let coord = FB + (i + y) * SCREEN_WIDTH + x + j;
+			if (x + j >= SCREEN_WIDTH || y + i >= SCREEN_HEIGHT)
+				continue;
+
+			let fb = bus::read(cpu.bus, coord: u16);
+			let s: u8 = if ((sprite & (1 << (7 - j))) > 0) 1 else 0;
+			let p = s ^ fb;
+
+			if (fb == 1 && p == 0)
+				cpu.vf = 1;
+
+			bus::write(cpu.bus, coord: u16, p);
 		};
-		bus::write(cpu.bus, FB + coord, sprite ^ fb);
 	};
 };
 

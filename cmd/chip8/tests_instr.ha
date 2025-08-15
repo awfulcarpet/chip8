@@ -52,50 +52,120 @@
 	};
 };
 
-@test fn drw_v1_v3_2n() void = {
+@test fn drw_vx_vy_1n_wrap() void = {
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
 	defer free(cpu);
 
-	cpu.v1 = 30;
-	cpu.v3 = 10;
+	cpu.v3 = SCREEN_WIDTH + 4;
+	cpu.v0 = SCREEN_HEIGHT + 1;
 	cpu.i = 0x20;
 
 	bus::write(cpu.bus, 0x20, 0xff);
-	bus::write(cpu.bus, 0x21, 0x0f);
 
-	bus::write(cpu.bus, 0x00, 0xd1);
-	bus::write(cpu.bus, 0x01, 0x32);
-
-	cpu::execute(cpu);
-
-	let row = bus::read(cpu.bus, FB + SCREEN_WIDTH * cpu.v3: u16 + cpu.v1);
-	assert(row == 0xff);
-
-	let row = bus::read(cpu.bus, FB + SCREEN_WIDTH * (cpu.v3: u16 + 1) + cpu.v1);
-	assert(row == 0x0f);
-};
-
-@test fn drw_vf() void = {
-	let bus = bus { ... };
-	let cpu = cpu::cpu(&bus);
-	defer free(cpu);
-
-	cpu.v0 = 0;
-	cpu.v1 = 0;
-	cpu.i = 0x20;
-
-	bus::write(cpu.bus, 0x20, 0xff);
-	bus::write(cpu.bus, FB, 0x0f);
-
-	bus::write(cpu.bus, 0x00, 0xd0);
+	bus::write(cpu.bus, 0x00, 0xd3);
 	bus::write(cpu.bus, 0x01, 0x01);
 
 	cpu::execute(cpu);
-	let row = bus::read(cpu.bus, FB);
-	assert(row == 0xf0);
 
-	assert(cpu.vf == 1);
+	for (let i = 0z; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + 1 * SCREEN_WIDTH + 4 + i: u16);
+		assert(row == 0x01);
+	};
+
+	assert(cpu.vf == 0);
+};
+
+@test fn drw_vx_vy_2n_clip() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.va = SCREEN_WIDTH - 4;
+	cpu.vd = SCREEN_HEIGHT - 1;
+	cpu.i = 0x20;
+
+	bus::write(cpu.bus, 0x20, 0xff);
+	bus::write(cpu.bus, 0x21, 0xff);
+
+	bus::write(cpu.bus, 0x00, 0xda);
+	bus::write(cpu.bus, 0x01, 0xd2);
+
+	cpu::execute(cpu);
+
+	for (let i = 0; i < 8; i += 1) {
+		let coord: u16 = FB + cpu.vd: u16 * SCREEN_WIDTH + cpu.va + i: u16;
+		if (coord >= FB + FB_LEN)
+			continue;
+		let row = bus::read(cpu.bus, coord);
+		if (cpu.va + i: u8 < SCREEN_WIDTH) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
+
+	for (let i = 0; i < 8; i += 1) {
+		let coord: u16 = FB + (cpu.vd: u16 + 1) * SCREEN_WIDTH + cpu.va + i: u16;
+		if (coord >= FB + FB_LEN)
+			continue;
+		let row = bus::read(cpu.bus, coord);
+		if (cpu.va + i: u8 < SCREEN_WIDTH) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
+
+	assert(cpu.vf == 0);
+};
+
+@test fn drw_vx_vy_3n() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v6 = 4;
+	cpu.v4 = 20;
+	cpu.i = 0x20;
+
+	bus::write(cpu.bus, 0x20, 0xf3);
+	bus::write(cpu.bus, 0x21, 0xf4);
+	bus::write(cpu.bus, 0x22, 0x4f);
+
+	bus::write(cpu.bus, 0x00, 0xd6);
+	bus::write(cpu.bus, 0x01, 0x43);
+
+	cpu::execute(cpu);
+
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + cpu.v4: u16 * SCREEN_WIDTH + cpu.v6 + i: u16);
+		if (i < 4 || i > 5) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
+
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + (cpu.v4: u16 + 1) * SCREEN_WIDTH + cpu.v6 + i: u16);
+		if (i < 4 || i == 5) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
+
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + (cpu.v4: u16 + 2) * SCREEN_WIDTH + cpu.v6 + i: u16);
+		if (i == 1 || i >= 4) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
+
+	assert(cpu.vf == 0);
 };
 
 @test fn drw_3n() void = {
@@ -108,25 +178,38 @@
 	cpu.i = 0x20;
 
 	bus::write(cpu.bus, 0x20, 0xff);
-	bus::write(cpu.bus, 0x21, 0x0f);
-	bus::write(cpu.bus, 0x22, 0x0a);
+	bus::write(cpu.bus, 0x21, 0xf0);
+	bus::write(cpu.bus, 0x22, 0x0f);
 
 	bus::write(cpu.bus, 0x00, 0xd0);
 	bus::write(cpu.bus, 0x01, 0x03);
 
-	bus::write(cpu.bus, FB, 0x00);
-	bus::write(cpu.bus, FB + SCREEN_WIDTH, 0x00);
-
 	cpu::execute(cpu);
 
-	let row = bus::read(cpu.bus, FB);
-	assert(row == 0xff);
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + i: u16);
+		assert(row == 0x01);
+	};
 
-	let row = bus::read(cpu.bus, FB + SCREEN_WIDTH);
-	assert(row == 0x0f);
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + SCREEN_WIDTH + i: u16);
+		if (i < 4) {
+			assert(row == 0x01);
+		} else {
+			assert(row == 0x00);
+		};
+	};
 
-	let row = bus::read(cpu.bus, FB + SCREEN_WIDTH * 2);
-	assert(row == 0x0a);
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + SCREEN_WIDTH * 2 + i: u16);
+		if (i < 4) {
+			assert(row == 0x00);
+		} else {
+			assert(row == 0x01);
+		};
+	};
+
+	assert(cpu.vf == 0);
 };
 
 @test fn drw_1n() void = {
@@ -143,11 +226,11 @@
 	bus::write(cpu.bus, 0x00, 0xd0);
 	bus::write(cpu.bus, 0x01, 0x01);
 
-	bus::write(cpu.bus, FB, 0x00);
-
 	cpu::execute(cpu);
 
-	let row = bus::read(cpu.bus, FB);
-
-	assert(row == 0xff);
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + i: u16);
+		assert(row == 0x01);
+	};
+	assert(cpu.vf == 0);
 };
