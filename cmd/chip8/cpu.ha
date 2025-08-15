@@ -76,12 +76,51 @@ fn cpu::log(cpu: *cpu) void = {
 	fmt::println("")!;
 };
 
+fn cpu::getreg(cpu: *cpu, num: u8) *u8 = {
+	switch (num) {
+	case 0x0 =>
+		return &cpu.v0;
+	case 0x1 =>
+		return &cpu.v1;
+	case 0x2 =>
+		return &cpu.v2;
+	case 0x3 =>
+		return &cpu.v3;
+	case 0x4 =>
+		return &cpu.v4;
+	case 0x5 =>
+		return &cpu.v5;
+	case 0x6 =>
+		return &cpu.v6;
+	case 0x7 =>
+		return &cpu.v7;
+	case 0x8 =>
+		return &cpu.v8;
+	case 0x9 =>
+		return &cpu.v9;
+	case 0xa =>
+		return &cpu.va;
+	case 0xb =>
+		return &cpu.vb;
+	case 0xc =>
+		return &cpu.vc;
+	case 0xd =>
+		return &cpu.vd;
+	case 0xe =>
+		return &cpu.ve;
+	case 0xf =>
+		return &cpu.vf;
+	case =>
+		fmt::fatalf("reg num is out of range");
+	};
+};
+
 fn read_opcode(cpu: *cpu) u16 = {
 	return bus::read(cpu.bus, cpu.pc): u16 << 8
 		| bus::read(cpu.bus, cpu.pc + 1);
 };
 
-// string representation of opcodes. The caller must free the result.
+// returns string representation of opcodes. The caller must free the result.
 fn stropcode(opcode: u16) (str | invalid_opcode) = {
 	switch (opcode & 0xf000) {
 	case opcodes::CLS & 0xf000 =>
@@ -105,7 +144,18 @@ fn stropcode(opcode: u16) (str | invalid_opcode) = {
 	};
 };
 
+fn ld_vx_byte(cpu: *cpu, opcode: u16) void = {
+	let reg = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	*reg = (opcode & 0xff): u8;
+};
+
 export fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
+	switch (opcode & 0xf000) {
+	case opcodes::LD & 0xf000 =>
+		ld_vx_byte(cpu, opcode);
+	case =>
+		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
+	};
 	cpu.pc += 2;
 };
