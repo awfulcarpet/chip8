@@ -3,6 +3,7 @@ use strings;
 
 type opcodes = enum u16 {
 	CLS = 0x00e0,
+	JP_ADR = 0x1000,
 	LD_VX_BYTE = 0x6000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
@@ -188,8 +189,13 @@ fn cls(cpu: *cpu) void = {
 	};
 };
 
+fn jp(cpu: *cpu, opcode: u16) void = {
+	cpu.pc = opcode & 0xfff;
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
+	cpu.pc += 2;
 	switch (opcode & 0xf000) {
 	case 0x0000 =>
 		switch (opcode) {
@@ -198,6 +204,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		case =>
 			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 		};
+	case opcodes::JP_ADR & 0xf000 =>
+		jp(cpu, opcode);
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
 	case opcodes::LD_I_BYTE & 0xf000 =>
@@ -207,5 +215,4 @@ fn cpu::execute(cpu: *cpu) void = {
 	case =>
 		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 	};
-	cpu.pc += 2;
 };

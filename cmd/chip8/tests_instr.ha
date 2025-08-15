@@ -265,3 +265,16 @@ use fmt;
 	};
 	assert(cpu.vf == 0);
 };
+
+@test fn jp_adr() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	bus::write(cpu.bus, 0x00, 0x13);
+	bus::write(cpu.bus, 0x01, 0x45);
+
+	cpu::execute(cpu);
+
+	assert(cpu.pc == 0x345);
+};
