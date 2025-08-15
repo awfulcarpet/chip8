@@ -4,5 +4,9 @@ export fn main() void = {
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
 
-	fmt::println("hello, world")!;
+	open(&bus, "tests/1-chip8-logo.ch8");
+
+	cpu.pc = 0x200;
+	cpu::log(&cpu);
+	cpu::execute(&cpu);
 };
