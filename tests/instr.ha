@@ -37,3 +37,19 @@ use cmd::chip8;
 		assert(*cpu::getreg(cpu, i: u8) == i + 5);
 	};
 };
+
+@test fn ld_i_byte() void = {
+	for (let i = 0z; i <= 0xfff; i += 1) {
+		let bus = chip8::bus { ... };
+		let cpu = cpu::cpu(&bus);
+		defer free(cpu);
+
+		cpu.i = (i - 3): u8;
+		bus::write(cpu.bus, 0x00, 0xa0 | (i & 0xf00): u8);
+		bus::write(cpu.bus, 0x01, (i & 0xff): u8);
+
+		cpu::execute(cpu);
+
+		assert(cpu.i == i: u8);
+	};
+};

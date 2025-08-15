@@ -150,11 +150,17 @@ fn ld_vx_byte(cpu: *cpu, opcode: u16) void = {
 	*reg = (opcode & 0xff): u8;
 };
 
+fn ld_i_byte(cpu: *cpu, opcode: u16) void = {
+	cpu.i = opcode & 0xfff;
+};
+
 export fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	switch (opcode & 0xf000) {
 	case opcodes::LD & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
+	case opcodes::LDI & 0xf000 =>
+		ld_i_byte(cpu, opcode);
 	case =>
 		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 	};
