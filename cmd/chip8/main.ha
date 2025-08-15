@@ -17,13 +17,10 @@ export fn main() void = {
 	open(&bus, "roms/1-chip8-logo.ch8");
 
 	cpu.pc = 0x200;
-	for (let i = 0z; i < 39; i += 1) {
+	for (graphics.running) {
 		cpu::log(cpu);
 		cpu::execute(cpu);
-		graphics::update(graphics);
-	};
 
-	for (graphics.running) {
 		graphics::update(graphics);
 		graphics::draw(graphics);
 	};

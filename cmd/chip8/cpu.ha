@@ -132,6 +132,8 @@ fn stropcode(opcode: u16) (str | invalid_opcode) = {
 		case =>
 			return invalid_opcode;
 		};
+	case opcodes::JP_ADR & 0xf000 =>
+		return fmt::bsprintf(buf, "JP {:.4x}", opcode & 0xfff)!;
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		return fmt::bsprintf(buf, "LD V{}, {:.4x}",
 			(opcode & 0xf00) >> 8, opcode & 0xff)!;
