@@ -154,6 +154,27 @@ fn ld_i_byte(cpu: *cpu, opcode: u16) void = {
 	cpu.i = opcode & 0xfff;
 };
 
+fn drw_vx_vy_nib(cpu: *cpu, opcode: u16) void = {
+	let n = (opcode & 0xf): u8;
+	let x = *cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8) % SCREEN_WIDTH;
+	let y = *cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8) % SCREEN_HEIGHT;
+
+	cpu.vf = 0;
+
+	for (let i = 0z; i < n; i += 1) {
+		if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
+			continue;
+		let coord = ((y + i) * SCREEN_WIDTH + x): u16;
+		let sprite = bus::read(cpu.bus, cpu.i + i: u16);
+		let fb = bus::read(cpu.bus, FB + coord);
+		// TODO: check that this algorithm works completely
+		if ((fb & ~sprite) != fb) {
+			cpu.vf = 1;
+		};
+		bus::write(cpu.bus, FB + coord, sprite ^ fb);
+	};
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	switch (opcode & 0xf000) {
@@ -161,6 +182,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		ld_vx_byte(cpu, opcode);
 	case opcodes::LD_I_BYTE & 0xf000 =>
 		ld_i_byte(cpu, opcode);
+	case opcodes::DRW =>
+		drw_vx_vy_nib(cpu, opcode);
 	case =>
 		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 	};

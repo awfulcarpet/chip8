@@ -1,6 +1,9 @@
 use sdl2;
 use sdl2::{ SDL_GameControllerAxis, SDL_EventType, SDL_RendererFlags, SDL_WindowFlags };
 
+def SCREEN_WIDTH = 64;
+def SCREEN_HEIGHT = 32;
+
 fn graphics::init() void = {
 	sdl2::SDL_Init(sdl2::SDL_INIT_VIDEO
 		| sdl2::SDL_INIT_AUDIO

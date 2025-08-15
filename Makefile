@@ -3,7 +3,7 @@
 
 HARE = hare
 HARELIBS = -lSDL2
-HAREFLAGS = $(HARELIBS)
+HAREFLAGS =
 
 DESTDIR =
 PREFIX = /usr/local
