@@ -278,3 +278,17 @@ use fmt;
 
 	assert(cpu.pc == 0x345);
 };
+
+@test fn add_vx_byte() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v3 = 0xf0;
+	bus::write(cpu.bus, 0x00, 0x73);
+	bus::write(cpu.bus, 0x01, 0x1f);
+
+	cpu::execute(cpu);
+
+	assert(cpu.v3 == 0x0f);
+};

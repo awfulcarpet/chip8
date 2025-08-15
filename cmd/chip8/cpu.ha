@@ -5,6 +5,7 @@ type opcodes = enum u16 {
 	CLS = 0x00e0,
 	JP_ADR = 0x1000,
 	LD_VX_BYTE = 0x6000,
+	ADD_VX_BYTE = 0x7000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
 };
@@ -135,7 +136,10 @@ fn stropcode(opcode: u16) (str | invalid_opcode) = {
 	case opcodes::JP_ADR & 0xf000 =>
 		return fmt::bsprintf(buf, "JP {:.4x}", opcode & 0xfff)!;
 	case opcodes::LD_VX_BYTE & 0xf000 =>
-		return fmt::bsprintf(buf, "LD V{}, {:.4x}",
+		return fmt::bsprintf(buf, "LD V{}, {:.2x}",
+			(opcode & 0xf00) >> 8, opcode & 0xff)!;
+	case opcodes::ADD_VX_BYTE & 0xf000 =>
+		return fmt::bsprintf(buf, "ADD V{}, {:.2x}",
 			(opcode & 0xf00) >> 8, opcode & 0xff)!;
 	case opcodes::LD_I_BYTE & 0xf000 =>
 		return fmt::bsprintf(buf, "LD I, {:.4x}", opcode & 0xfff)!;
@@ -195,6 +199,12 @@ fn jp(cpu: *cpu, opcode: u16) void = {
 	cpu.pc = opcode & 0xfff;
 };
 
+fn add_vx_byte(cpu: *cpu, opcode: u16) void = {
+	let reg: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+
+	*reg += (opcode & 0xff): u8;
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -210,6 +220,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		jp(cpu, opcode);
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
+	case opcodes::ADD_VX_BYTE & 0xf000 =>
+		add_vx_byte(cpu, opcode);
 	case opcodes::LD_I_BYTE & 0xf000 =>
 		ld_i_byte(cpu, opcode);
 	case opcodes::DRW =>
