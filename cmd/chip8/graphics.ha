@@ -9,6 +9,7 @@ type graphics = struct {
 	bus: *bus,
 	win: *sdl2::SDL_Window,
 	render: *sdl2::SDL_Renderer,
+	running: bool,
 };
 
 fn graphics::init(bus: *bus) (*graphics | sdl2::error) = {
@@ -25,12 +26,13 @@ fn graphics::init(bus: *bus) (*graphics | sdl2::error) = {
 		bus = bus,
 		win = win,
 		render = render,
+		running = true,
 	})!;
 
 	return g;
 };
 
-fn graphics::update(graphics: *graphics) void = {
+fn graphics::draw(graphics: *graphics) void = {
 	for (let i = 0; i < SCREEN_HEIGHT; i += 1) {
 		for (let j = 0; j < SCREEN_WIDTH; j += 1) {
 			let p = bus::read(graphics.bus, FB + i: u16 * SCREEN_WIDTH + j: u16);
@@ -43,6 +45,16 @@ fn graphics::update(graphics: *graphics) void = {
 		};
 	};
 	sdl2::SDL_RenderPresent(graphics.render);
+};
+
+fn graphics::update(graphics: *graphics) void = {
+	let ev = sdl2::event { ... };
+	for (sdl2::SDL_PollEvent(&ev)! == 1) switch (ev.event_type) {
+	case SDL_EventType::QUIT =>
+		graphics.running = false;
+		return;
+	case => void;
+	};
 };
 
 fn graphics::finish(graphics: *graphics) void = {

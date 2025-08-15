@@ -23,5 +23,8 @@ export fn main() void = {
 		graphics::update(graphics);
 	};
 
-	for (true) void;
+	for (graphics.running) {
+		graphics::update(graphics);
+		graphics::draw(graphics);
+	};
 };
