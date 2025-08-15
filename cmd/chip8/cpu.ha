@@ -70,7 +70,6 @@ fn cpu::log(cpu: *cpu) void = {
 	case let s: str =>
 		yield s;
 	};
-	defer free(stropcode);
 
 	fmt::printfln("{}", stropcode)!;
 
@@ -123,6 +122,7 @@ fn read_opcode(cpu: *cpu) u16 = {
 
 // returns string representation of opcodes. The caller must free the result.
 fn stropcode(opcode: u16) (str | invalid_opcode) = {
+	static let buf: [13]u8 = [0...];
 	switch (opcode & 0xf000) {
 	case opcodes::CLS & 0xf000 =>
 		switch (opcode) {
@@ -132,12 +132,12 @@ fn stropcode(opcode: u16) (str | invalid_opcode) = {
 			return invalid_opcode;
 		};
 	case opcodes::LD_VX_BYTE & 0xf000 =>
-		return fmt::asprintf("LD V{}, {:.4x}", (opcode & 0xf00) >> 8,
-			opcode & 0xff)!;
+		return fmt::bsprintf(buf, "LD V{}, {:.4x}",
+			(opcode & 0xf00) >> 8, opcode & 0xff)!;
 	case opcodes::LD_I_BYTE & 0xf000 =>
-		return fmt::asprintf("LD I, {:.4x}", opcode & 0xfff)!;
+		return fmt::bsprintf(buf, "LD I, {:.4x}", opcode & 0xfff)!;
 	case opcodes::DRW & 0xf000 =>
-		return fmt::asprintf("DRW V{}, V{}, {:.1x}",
+		return fmt::bsprintf(buf, "DRW V{}, V{}, {:.1x}",
 			(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4,
 			opcode & 0x0f)!;
 	case =>
