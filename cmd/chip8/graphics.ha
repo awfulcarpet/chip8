@@ -57,8 +57,10 @@ fn graphics::update(graphics: *graphics) void = {
 	};
 };
 
-fn graphics::finish(graphics: *graphics) void = {
+fn graphics::freeres(graphics: *graphics) void = {
 	sdl2::SDL_DestroyRenderer(graphics.render);
 	sdl2::SDL_DestroyWindow(graphics.win);
 	sdl2::SDL_Quit();
+
+	free(graphics);
 };
