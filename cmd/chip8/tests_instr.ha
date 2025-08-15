@@ -1,3 +1,4 @@
+use fmt;
 @test fn getreg() void = {
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
@@ -50,6 +51,36 @@
 
 		assert(cpu.i == i: u8);
 	};
+};
+
+@test fn drw_vf() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v0 = 0;
+	cpu.v1 = 0;
+	cpu.i = 0x20;
+
+	bus::write(cpu.bus, 0x20, 0xff);
+	for (let i = 0; i < 4; i += 1) {
+		bus::write(cpu.bus, FB + i: u16, 0x01);
+	};
+
+	bus::write(cpu.bus, 0x00, 0xd0);
+	bus::write(cpu.bus, 0x01, 0x01);
+
+	cpu::execute(cpu);
+
+	for (let i = 0; i < 8; i += 1) {
+		let row = bus::read(cpu.bus, FB + i: u16);
+		if (i < 4) {
+			assert(row == 0x00);
+		} else {
+			assert(row == 0x01);
+		};
+	};
+	assert(cpu.vf == 1);
 };
 
 @test fn drw_vx_vy_1n_wrap() void = {

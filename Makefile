@@ -17,7 +17,6 @@ run: chip8
 	./chip8
 
 chip8: $(HARE_SOURCES)
-	# export HAREPATH="/usr/local/src/hare/stdlib:/usr/local/src/hare/third-party:./vendor/*/"
 	$(HARE) build $(HAREFLAGS) $(HARELIBS) -o $@ cmd/$@/
 
 check:
