@@ -38,6 +38,7 @@ export type cpu = struct {
 	bus: *bus,
 };
 
+// returns a heap allocated cpu struct.
 export fn cpu::cpu(bus: *bus) *cpu = {
 	let cpu: *cpu = alloc(cpu { bus = bus, ... })!;
 
@@ -76,7 +77,7 @@ fn cpu::log(cpu: *cpu) void = {
 	fmt::println("")!;
 };
 
-fn cpu::getreg(cpu: *cpu, num: u8) *u8 = {
+export fn cpu::getreg(cpu: *cpu, num: u8) *u8 = {
 	switch (num) {
 	case 0x0 =>
 		return &cpu.v0;
