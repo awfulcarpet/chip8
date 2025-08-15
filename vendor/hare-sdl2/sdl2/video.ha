@@ -78,7 +78,7 @@ export fn SDL_CreateWindow(
 	h: int,
 	flags: SDL_WindowFlags,
 ) (*SDL_Window | error) = {
-	let title = c::fromstr(title);
+	let title = c::fromstr(title)!;
 	defer free(title);
 	return wrapptr(_SDL_CreateWindow(title, x, y, w, h, flags))?: *SDL_Window;
 };

@@ -2,7 +2,8 @@
 .SUFFIXES:
 
 HARE = hare
-HAREFLAGS =
+HARELIBS = -lSDL2
+HAREFLAGS = $(HARELIBS)
 
 DESTDIR =
 PREFIX = /usr/local
@@ -16,6 +17,7 @@ run: chip8
 	./chip8
 
 chip8: $(HARE_SOURCES)
+	# export HAREPATH="/usr/local/src/hare/stdlib:/usr/local/src/hare/third-party:./vendor/*/"
 	$(HARE) build $(HAREFLAGS) -o $@ cmd/$@/
 
 check:

@@ -635,7 +635,7 @@ export type SDL_Keysym = struct {
 @symbol("SDL_GetKeyFromName") fn _SDL_GetKeyFromName(name: *const c::char) SDL_Keycode;
 
 export fn SDL_GetKeyFromName(name: str) (SDL_Keycode | error) = {
-	const name = c::fromstr(name);
+	const name = c::fromstr(name)!;
 	defer free(name);
 	const sym = _SDL_GetKeyFromName(name);
 	if (sym == SDL_Keycode::UNKNOWN) {
