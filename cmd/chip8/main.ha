@@ -31,6 +31,13 @@ export fn main() void = {
 	let roms = [
 		"roms/1-chip8-logo.ch8",
 		"roms/2-ibm-logo.ch8",
+		"roms/3-corax+.ch8",
+		"3-corax+.ch8",
+		"4-flags.ch8",
+		"5-quirks.ch8",
+		"6-keypad.ch8",
+		"7-beep.ch8",
+		"8-scrolling.ch8",
 	];
 
 	for (let i = 0z; i < len(roms); i += 1) {
