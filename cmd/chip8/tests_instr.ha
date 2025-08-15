@@ -1,7 +1,5 @@
-use cmd::chip8;
-
 @test fn getreg() void = {
-	let bus = chip8::bus { ... };
+	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
 	defer free(cpu);
 
@@ -25,7 +23,7 @@ use cmd::chip8;
 
 @test fn ld_vx_byte() void = {
 	for (let i = 0z; i <= 0xf; i += 1) {
-		let bus = chip8::bus { ... };
+		let bus = bus { ... };
 		let cpu = cpu::cpu(&bus);
 		defer free(cpu);
 
@@ -40,7 +38,7 @@ use cmd::chip8;
 
 @test fn ld_i_byte() void = {
 	for (let i = 0z; i <= 0xfff; i += 1) {
-		let bus = chip8::bus { ... };
+		let bus = bus { ... };
 		let cpu = cpu::cpu(&bus);
 		defer free(cpu);
 

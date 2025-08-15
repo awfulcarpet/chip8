@@ -10,7 +10,7 @@ type opcodes = enum u16 {
 
 type invalid_opcode = !void;
 
-export type cpu = struct {
+type cpu = struct {
 	v0: u8,
 	v1: u8,
 	v2: u8,
@@ -39,7 +39,7 @@ export type cpu = struct {
 };
 
 // returns a heap allocated cpu struct.
-export fn cpu::cpu(bus: *bus) *cpu = {
+fn cpu::cpu(bus: *bus) *cpu = {
 	let cpu: *cpu = alloc(cpu { bus = bus, ... })!;
 
 	return cpu;
@@ -77,7 +77,7 @@ fn cpu::log(cpu: *cpu) void = {
 	fmt::println("")!;
 };
 
-export fn cpu::getreg(cpu: *cpu, num: u8) *u8 = {
+fn cpu::getreg(cpu: *cpu, num: u8) *u8 = {
 	switch (num) {
 	case 0x0 =>
 		return &cpu.v0;
@@ -154,7 +154,7 @@ fn ld_i_byte(cpu: *cpu, opcode: u16) void = {
 	cpu.i = opcode & 0xfff;
 };
 
-export fn cpu::execute(cpu: *cpu) void = {
+fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	switch (opcode & 0xf000) {
 	case opcodes::LD_VX_BYTE & 0xf000 =>
