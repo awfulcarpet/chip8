@@ -8,6 +8,7 @@ export fn main() void = {
 
 	cpu.pc = 0x200;
 	for (let i = 0z; i < 6; i += 1) {
+		cpu::log(cpu);
 		cpu::execute(cpu);
 	};
 };

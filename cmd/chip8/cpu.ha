@@ -8,6 +8,8 @@ type opcodes = enum u16 {
 	DRW = 0xd000,
 };
 
+type invalid_opcode = !void;
+
 export type cpu = struct {
 	v0: u8,
 	v1: u8,
@@ -59,9 +61,18 @@ fn cpu::log(cpu: *cpu) void = {
 	fmt::printfln("d: {:.2x} s: {:.2x}", cpu.dtimer, cpu.stimer)!;
 
 	let opcode = read_opcode(cpu);
-	let stropcode = stropcode(opcode);
+	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
+
+	let stropcode = match (stropcode(opcode)) {
+	case invalid_opcode =>
+		fmt::fatalf("invalid opcode: {:.4x}", opcode);
+	case let s: str =>
+		yield s;
+	};
 	defer free(stropcode);
-	fmt::printfln("{:.4x}: {:.4x} {}", cpu.pc, opcode, stropcode)!;
+
+	fmt::printfln("{}", stropcode)!;
+
 	fmt::println("")!;
 };
 
@@ -71,10 +82,15 @@ fn read_opcode(cpu: *cpu) u16 = {
 };
 
 // string representation of opcodes. The caller must free the result.
-fn stropcode(opcode: u16) str = {
+fn stropcode(opcode: u16) (str | invalid_opcode) = {
 	switch (opcode & 0xf000) {
 	case opcodes::CLS & 0xf000 =>
-		return strings::dup("CLS")!;
+		switch (opcode) {
+		case opcodes::CLS =>
+			return strings::dup("CLS")!;
+		case =>
+			return invalid_opcode;
+		};
 	case opcodes::LD & 0xf000 =>
 		return fmt::asprintf("LD V{}, {:.4x}", (opcode & 0xf00) >> 8,
 			opcode & 0xff)!;
@@ -85,7 +101,7 @@ fn stropcode(opcode: u16) str = {
 			(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4,
 			opcode & 0x0f)!;
 	case =>
-		return "";
+		return invalid_opcode;
 	};
 };
 
