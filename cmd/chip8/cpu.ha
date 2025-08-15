@@ -3,8 +3,8 @@ use strings;
 
 type opcodes = enum u16 {
 	CLS = 0x00e0,
-	LD = 0x6000,
-	LDI = 0xa000,
+	LD_VX_BYTE = 0x6000,
+	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
 };
 
@@ -131,10 +131,10 @@ fn stropcode(opcode: u16) (str | invalid_opcode) = {
 		case =>
 			return invalid_opcode;
 		};
-	case opcodes::LD & 0xf000 =>
+	case opcodes::LD_VX_BYTE & 0xf000 =>
 		return fmt::asprintf("LD V{}, {:.4x}", (opcode & 0xf00) >> 8,
 			opcode & 0xff)!;
-	case opcodes::LDI & 0xf000 =>
+	case opcodes::LD_I_BYTE & 0xf000 =>
 		return fmt::asprintf("LD I, {:.4x}", opcode & 0xfff)!;
 	case opcodes::DRW & 0xf000 =>
 		return fmt::asprintf("DRW V{}, V{}, {:.1x}",
@@ -157,9 +157,9 @@ fn ld_i_byte(cpu: *cpu, opcode: u16) void = {
 export fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	switch (opcode & 0xf000) {
-	case opcodes::LD & 0xf000 =>
+	case opcodes::LD_VX_BYTE & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
-	case opcodes::LDI & 0xf000 =>
+	case opcodes::LD_I_BYTE & 0xf000 =>
 		ld_i_byte(cpu, opcode);
 	case =>
 		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
