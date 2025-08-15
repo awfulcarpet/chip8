@@ -180,9 +180,24 @@ fn drw_vx_vy_nib(cpu: *cpu, opcode: u16) void = {
 	};
 };
 
+fn cls(cpu: *cpu) void = {
+	for (let i = 0z; i < SCREEN_HEIGHT; i += 1) {
+		for (let j = 0z; j < SCREEN_WIDTH; j += 1) {
+			bus::write(cpu.bus, FB + i: u16 * SCREEN_HEIGHT + j: u16, 0x00);
+		};
+	};
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	switch (opcode & 0xf000) {
+	case 0x0000 =>
+		switch (opcode) {
+		case opcodes::CLS =>
+			cls(cpu);
+		case =>
+			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
+		};
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
 	case opcodes::LD_I_BYTE & 0xf000 =>

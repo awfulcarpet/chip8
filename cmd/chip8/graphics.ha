@@ -30,7 +30,17 @@ fn graphics::init(bus: *bus) (*graphics | sdl2::error) = {
 };
 
 fn graphics::update(graphics: *graphics) void = {
-	sdl2::SDL_RenderDrawPoint(graphics.render, 30, 30)!;
+	for (let i = 0; i < SCREEN_HEIGHT; i += 1) {
+		for (let j = 0; j < SCREEN_WIDTH; j += 1) {
+			let p = bus::read(graphics.bus, FB + i: u16 * SCREEN_WIDTH + j: u16);
+			if (p != 0) {
+				sdl2::SDL_SetRenderDrawColor(graphics.render, 255, 255, 255, 0)!;
+			} else {
+				sdl2::SDL_SetRenderDrawColor(graphics.render, 0, 0, 0, 0)!;
+			};
+			sdl2::SDL_RenderDrawPoint(graphics.render, j, i)!;
+		};
+	};
 	sdl2::SDL_RenderPresent(graphics.render);
 };
 
