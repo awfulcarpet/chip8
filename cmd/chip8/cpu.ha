@@ -12,6 +12,7 @@ type opcodes = enum u16 {
 	LD_VX_BYTE = 0x6000,
 	ADD_VX_BYTE = 0x7000,
 	LD_VX_VY = 0x8000,
+	OR_VX_VY = 0x8001,
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
@@ -167,6 +168,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		case opcodes::LD_VX_VY =>
 			return fmt::bsprintf(buf, "LD V{}, V{}",
 				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
+		case opcodes::OR_VX_VY =>
+			return fmt::bsprintf(buf, "OR V{}, V{}",
+				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
 		case =>
 			return invalid_opcode;
 		};
@@ -293,6 +297,13 @@ fn ld_vx_vy(cpu: *cpu, opcode: u16) void = {
 	*vx = *vy;
 };
 
+fn or_vx_vy(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+
+	*vx |= *vy;
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -325,6 +336,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		switch (opcode & 0xf00f) {
 		case opcodes::LD_VX_VY =>
 			ld_vx_vy(cpu, opcode);
+		case opcodes::OR_VX_VY =>
+			or_vx_vy(cpu, opcode);
 		case =>
 			void;
 		};
