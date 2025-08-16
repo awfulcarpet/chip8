@@ -32,12 +32,11 @@ export fn main() void = {
 		"roms/1-chip8-logo.ch8",
 		"roms/2-ibm-logo.ch8",
 		"roms/3-corax+.ch8",
-		"3-corax+.ch8",
-		"4-flags.ch8",
-		"5-quirks.ch8",
-		"6-keypad.ch8",
-		"7-beep.ch8",
-		"8-scrolling.ch8",
+		"roms/4-flags.ch8",
+		"roms/5-quirks.ch8",
+		"roms/6-keypad.ch8",
+		"roms/7-beep.ch8",
+		"roms/8-scrolling.ch8",
 	];
 
 	for (let i = 0z; i < len(roms); i += 1) {
@@ -57,7 +56,7 @@ export fn main() void = {
 
 		cpu.pc = 0x200;
 		for (graphics.running) {
-			cpu::log(cpu);
+			// cpu::log(cpu);
 			cpu::execute(cpu);
 
 			graphics::update(graphics);

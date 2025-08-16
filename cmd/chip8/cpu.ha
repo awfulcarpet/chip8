@@ -3,6 +3,7 @@ use strings;
 
 type opcodes = enum u16 {
 	CLS = 0x00e0,
+	RET = 0x00ee,
 	JP_ADR = 0x1000,
 	CALL_ADR = 0x2000,
 	SE_VX_ADR = 0x3000,
@@ -136,6 +137,8 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		switch (opcode) {
 		case opcodes::CLS =>
 			return "CLS";
+		case opcodes::RET =>
+			return "RET";
 		case =>
 			return invalid_opcode;
 		};
@@ -259,12 +262,20 @@ fn sne_vx_vy(cpu: *cpu, opcode: u16) void = {
 
 fn call(cpu: *cpu, opcode: u16) void = {
 	cpu.sp += 1;
-	bus::write(cpu.bus, cpu.sp, (cpu.pc >> 8): u8);
-	cpu.sp += 1;
 	bus::write(cpu.bus, cpu.sp, (cpu.pc & 0xff): u8);
+	cpu.sp += 1;
+	bus::write(cpu.bus, cpu.sp, (cpu.pc >> 8): u8);
 	cpu.pc = opcode & 0xfff;
 };
 
+fn ret(cpu: *cpu, opcode: u16) void = {
+	let h: u16 = bus::read(cpu.bus, cpu.sp);
+	cpu.sp -= 1;
+	let l = bus::read(cpu.bus, cpu.sp);
+	cpu.sp -= 1;
+
+	cpu.pc = h << 8 | l;
+};
 
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
@@ -274,6 +285,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		switch (opcode) {
 		case opcodes::CLS =>
 			cls(cpu);
+		case opcodes::RET =>
+			ret(cpu, opcode);
 		case =>
 			void;
 			// fmt::fatalf("unimplemented opcode {:.4x}", opcode);

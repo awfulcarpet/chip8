@@ -292,3 +292,20 @@ use fmt;
 
 	assert(cpu.v3 == 0x0f);
 };
+
+@test fn call() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.sp = 10;
+	bus::write(cpu.bus, cpu.sp, 0xca);
+	bus::write(cpu.bus, cpu.sp - 1, 0xfe);
+
+	bus::write(cpu.bus, 0x00, 0x00);
+	bus::write(cpu.bus, 0x01, 0xee);
+
+	cpu::execute(cpu);
+
+	assert(cpu.pc == 0xcafe);
+};
