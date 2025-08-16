@@ -4,6 +4,9 @@ use strings;
 type opcodes = enum u16 {
 	CLS = 0x00e0,
 	JP_ADR = 0x1000,
+	SE_VX_ADR = 0x3000,
+	SNE_VX_BYTE = 0x4000,
+	SE_VX_VY = 0x5000,
 	LD_VX_BYTE = 0x6000,
 	ADD_VX_BYTE = 0x7000,
 	LD_I_BYTE = 0xa000,
@@ -66,15 +69,16 @@ fn cpu::log(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
 
-	let stropcode = match (stropcode(opcode)) {
+	let s = match (stropcode(opcode)) {
 	case invalid_opcode =>
 		fmt::fatalf("invalid opcode: {:.4x}", opcode);
 	case let s: str =>
 		yield s;
 	};
 
-	fmt::printfln("{}", stropcode)!;
+	fmt::printfln("{}", s)!;
 
+	fmt::println("")!;
 	fmt::println("")!;
 };
 
@@ -123,18 +127,27 @@ fn read_opcode(cpu: *cpu) u16 = {
 };
 
 // returns string representation of opcodes. The caller must free the result.
-fn stropcode(opcode: u16) (str | invalid_opcode) = {
+fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 	static let buf: [13]u8 = [0...];
 	switch (opcode & 0xf000) {
 	case opcodes::CLS & 0xf000 =>
 		switch (opcode) {
 		case opcodes::CLS =>
-			return strings::dup("CLS")!;
+			return "CLS";
 		case =>
 			return invalid_opcode;
 		};
 	case opcodes::JP_ADR & 0xf000 =>
 		return fmt::bsprintf(buf, "JP {:.4x}", opcode & 0xfff)!;
+	case opcodes::SE_VX_ADR & 0xf000 =>
+		return fmt::bsprintf(buf, "SE V{}, {:.2x}",
+			(opcode & 0xf00) >> 8, opcode & 0xff)!;
+	case opcodes::SNE_VX_BYTE & 0xf000 =>
+		return fmt::bsprintf(buf, "SNE V{}, {:.2x}",
+			(opcode & 0xf00) >> 8, opcode & 0xff)!;
+	case opcodes::SE_VX_VY & 0xf000 =>
+		return fmt::bsprintf(buf, "SE V{}, V{}",
+			(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		return fmt::bsprintf(buf, "LD V{}, {:.2x}",
 			(opcode & 0xf00) >> 8, opcode & 0xff)!;
@@ -205,6 +218,29 @@ fn add_vx_byte(cpu: *cpu, opcode: u16) void = {
 	*reg += (opcode & 0xff): u8;
 };
 
+fn se_vx_adr(cpu: *cpu, opcode: u16) void = {
+	let reg: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	if (*reg == opcode & 0xff)
+		cpu.pc += 2;
+};
+
+fn sne_vx_byte(cpu: *cpu, opcode: u16) void = {
+	let reg: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+
+	if (*reg != opcode & 0xff) {
+		cpu.pc += 2;
+	};
+};
+
+fn se_vx_vy(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+
+	if (*vx == *vy) {
+		cpu.pc += 2;
+	};
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -218,6 +254,12 @@ fn cpu::execute(cpu: *cpu) void = {
 		};
 	case opcodes::JP_ADR & 0xf000 =>
 		jp(cpu, opcode);
+	case opcodes::SE_VX_ADR & 0xf000 =>
+		se_vx_adr(cpu, opcode);
+	case opcodes::SNE_VX_BYTE & 0xf000 =>
+		sne_vx_byte(cpu, opcode);
+	case opcodes::SE_VX_VY & 0xf000 =>
+		se_vx_vy(cpu, opcode);
 	case opcodes::LD_VX_BYTE & 0xf000 =>
 		ld_vx_byte(cpu, opcode);
 	case opcodes::ADD_VX_BYTE & 0xf000 =>
@@ -227,6 +269,7 @@ fn cpu::execute(cpu: *cpu) void = {
 	case opcodes::DRW =>
 		drw_vx_vy_nib(cpu, opcode);
 	case =>
-		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
+	void;
+		// fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 	};
 };

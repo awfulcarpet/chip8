@@ -15,7 +15,7 @@ export fn main() void = {
 
 	defer graphics::freeres(graphics);
 
-	open(&bus, "roms/1-chip8-logo.ch8");
+	open(&bus, "roms/3-corax+.ch8");
 
 	cpu.pc = 0x200;
 	for (graphics.running) {
