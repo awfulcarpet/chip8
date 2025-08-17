@@ -343,3 +343,20 @@ use fmt;
 	assert(cpu.v2 == 0xbd);
 	assert(cpu.vf == 0);
 };
+
+@test fn subn_vx_vy() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v2 = 0xff;
+	cpu.v3 = 0xfe;
+
+	bus::write(cpu.bus, 0x00, 0x82);
+	bus::write(cpu.bus, 0x01, 0x37);
+
+	cpu::execute(cpu);
+
+	assert(cpu.v2 == 0xff);
+	assert(cpu.vf == 0);
+};

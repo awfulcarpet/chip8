@@ -413,14 +413,15 @@ fn shl_vx_vy(cpu: *cpu, opcode: u16) void = {
 fn subn_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+	let sub = *vy: i16 - *vx: i16;
 
-	if (*vy - *vx > *vy) {
+	*vx = *vy - *vx;
+
+	if (sub >= 0) {
 		cpu.vf = 1;
 	} else {
 		cpu.vf = 0;
 	};
-
-	*vx = *vy - *vx;
 };
 
 fn ld_vx_i(cpu: *cpu, opcode: u16) void = {
