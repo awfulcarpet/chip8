@@ -17,6 +17,7 @@ type opcodes = enum u16 {
 	XOR_VX_VY = 0x8003,
 	ADD_VX_VY = 0x8004,
 	SUB_VX_VY = 0x8005,
+	SHR_VX_VY = 0x8006,
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
@@ -186,6 +187,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
 		case opcodes::SUB_VX_VY =>
 			return fmt::bsprintf(buf, "SUB V{}, V{}",
+				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
+		case opcodes::SHR_VX_VY =>
+			return fmt::bsprintf(buf, "SHR V{}, V{}",
 				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
 		case =>
 			return invalid_opcode;
@@ -360,6 +364,12 @@ fn sub_vx_vy(cpu: *cpu, opcode: u16) void = {
 	*vx -= *vy;
 };
 
+
+fn shr_vx_vy(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	cpu.vf = *vx & 1;
+	*vx >>= 1;
+};
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -402,6 +412,8 @@ fn cpu::execute(cpu: *cpu) void = {
 			add_vx_vy(cpu, opcode);
 		case opcodes::SUB_VX_VY =>
 			sub_vx_vy(cpu, opcode);
+		case opcodes::SHR_VX_VY =>
+			shr_vx_vy(cpu, opcode);
 		case =>
 			void;
 		};
