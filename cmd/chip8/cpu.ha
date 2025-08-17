@@ -24,6 +24,7 @@ type opcodes = enum u16 {
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
 	SKP_VX = 0xe09e,
+	SKNP_VX = 0xe0a1,
 	LD_VX_DT = 0xf007,
 	LD_DT_VX = 0xf015,
 	LD_ST_VX = 0xf018,
@@ -224,6 +225,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		switch (opcode & 0xf0ff) {
 		case opcodes::SKP_VX =>
 			return fmt::bsprintf(buf, "SKP V{}",
+				(opcode & 0xf00) >> 8)!;
+		case opcodes::SKNP_VX =>
+			return fmt::bsprintf(buf, "SKNP V{}",
 				(opcode & 0xf00) >> 8)!;
 		case =>
 			return invalid_opcode;
@@ -501,6 +505,15 @@ fn skp_vx(cpu: *cpu, opcode: u16) void = {
 	};
 };
 
+fn sknp_vx(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	let k = bus::read(cpu.bus, KEY + *vx);
+
+	if (k == 0) {
+		cpu.pc += 2;
+	};
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -560,6 +573,8 @@ fn cpu::execute(cpu: *cpu) void = {
 	case 0xe000 =>
 		switch (opcode & 0xf0ff) {
 		case opcodes::SKP_VX =>
+			skp_vx(cpu, opcode);
+		case opcodes::SKNP_VX =>
 			skp_vx(cpu, opcode);
 		case =>
 			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
