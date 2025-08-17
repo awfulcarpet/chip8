@@ -90,15 +90,14 @@ fn cpu::log(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
 
-	// let s = match (stropcode(opcode)) {
-	// case invalid_opcode =>
-	// 	void;
-	// 	fmt::fatalf("invalid opcode: {:.4x}", opcode);
-	// case let s: str =>
-	// 	yield s;
-	// };
-	//
-	// fmt::printfln("{}", s)!;
+	let s = match (stropcode(opcode)) {
+	case invalid_opcode =>
+		fmt::fatalf("invalid opcode: {:.4x}", opcode);
+	case let s: str =>
+		yield s;
+	};
+
+	fmt::printfln("{}", s)!;
 
 	fmt::println("")!;
 	fmt::println("")!;
@@ -150,7 +149,7 @@ fn read_opcode(cpu: *cpu) u16 = {
 
 // returns string representation of opcodes. The caller must free the result.
 fn stropcode(opcode: u16) (str | !invalid_opcode) = {
-	static let buf: [13]u8 = [0...];
+	static let buf: [15]u8 = [0...];
 	switch (opcode & 0xf000) {
 	case opcodes::CLS & 0xf000 =>
 		switch (opcode) {
