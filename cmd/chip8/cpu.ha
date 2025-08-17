@@ -23,6 +23,7 @@ type opcodes = enum u16 {
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
+	LD_VX_DT = 0xf007,
 	LD_DT_VX = 0xf015,
 	LD_ST_VX = 0xf018,
 	ADD_I_VX = 0xf01e,
@@ -220,6 +221,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 			opcode & 0x0f)!;
 	case 0xf000 =>
 		switch (opcode & 0xf0ff) {
+		case opcodes::LD_VX_DT =>
+			return fmt::bsprintf(buf, "LD V{} DT",
+				(opcode & 0xf00) >> 8)!;
 		case opcodes::LD_DT_VX =>
 			return fmt::bsprintf(buf, "LD DT V{}",
 				(opcode & 0xf00) >> 8)!;
@@ -469,10 +473,16 @@ fn ld_dt_vx(cpu: *cpu, opcode: u16) void = {
 	cpu.dt = *vx;
 };
 
+fn ld_vx_dt(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	*vx = cpu.dt;
+};
+
 fn ld_st_vx(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
 	cpu.st = *vx;
 };
+
 
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
@@ -532,6 +542,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		drw_vx_vy_nib(cpu, opcode);
 	case 0xf000 =>
 		switch (opcode & 0xf0ff) {
+		case opcodes::LD_VX_DT =>
+			ld_vx_dt(cpu, opcode);
 		case opcodes::LD_DT_VX =>
 			ld_dt_vx(cpu, opcode);
 		case opcodes::LD_ST_VX =>
