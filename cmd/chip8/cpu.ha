@@ -315,7 +315,7 @@ fn drw_vx_vy_nib(cpu: *cpu, opcode: u16) void = {
 fn cls(cpu: *cpu) void = {
 	for (let i = 0z; i < SCREEN_HEIGHT; i += 1) {
 		for (let j = 0z; j < SCREEN_WIDTH; j += 1) {
-			bus::write(cpu.bus, FB + i: u16 * SCREEN_HEIGHT + j: u16, 0x00);
+			bus::write(cpu.bus, FB + i: u16 * SCREEN_WIDTH + j: u16, 0x00);
 		};
 	};
 };
