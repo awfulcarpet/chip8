@@ -23,6 +23,7 @@ type opcodes = enum u16 {
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
+	LD_I_VX = 0xf055,
 	LD_VX_I = 0xf065,
 };
 
@@ -216,6 +217,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		switch (opcode & 0xf0ff) {
 		case opcodes::LD_VX_I =>
 			return fmt::bsprintf(buf, "LD V{}, [I]",
+				(opcode & 0xf00) >> 8)!;
+		case opcodes::LD_I_VX =>
+			return fmt::bsprintf(buf, "LD [I], V{}",
 				(opcode & 0xf00) >> 8)!;
 		case =>
 			return invalid_opcode;
@@ -416,6 +420,14 @@ fn ld_vx_i(cpu: *cpu, opcode: u16) void = {
 	};
 };
 
+fn ld_i_vx(cpu: *cpu, opcode: u16) void = {
+	for (let i = 0z; i <= (opcode & 0xf00) >> 8; i += 1) {
+		let vx: *u8 = cpu::getreg(cpu, i: u8);
+		bus::write(cpu.bus, cpu.i, *vx);
+		cpu.i += 1;
+	};
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -477,6 +489,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		switch (opcode & 0xf0ff) {
 		case opcodes::LD_VX_I =>
 			ld_vx_i(cpu, opcode);
+		case opcodes::LD_I_VX =>
+			ld_i_vx(cpu, opcode);
 		case =>
 			void;
 		};
