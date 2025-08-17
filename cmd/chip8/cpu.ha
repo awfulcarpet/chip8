@@ -15,6 +15,7 @@ type opcodes = enum u16 {
 	OR_VX_VY = 0x8001,
 	AND_VX_VY = 0x8002,
 	XOR_VX_VY = 0x8003,
+	ADD_VX_VY = 0x8004,
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
@@ -179,6 +180,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		case opcodes::XOR_VX_VY =>
 			return fmt::bsprintf(buf, "XOR V{}, V{}",
 				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
+		case opcodes::ADD_VX_VY =>
+			return fmt::bsprintf(buf, "XOR V{}, V{}",
+				(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4)!;
 		case =>
 			return invalid_opcode;
 		};
@@ -318,11 +322,25 @@ fn and_vx_vy(cpu: *cpu, opcode: u16) void = {
 
 	*vx &= *vy;
 };
+
 fn xor_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
 
 	*vx ^= *vy;
+};
+
+fn add_vx_vy(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+
+	if (*vx: u16 + *vy: u16 > 0xff) {
+		cpu.vf = 1;
+	} else {
+		cpu.vf = 0;
+	};
+
+	*vx += *vy;
 };
 
 fn cpu::execute(cpu: *cpu) void = {
@@ -363,6 +381,8 @@ fn cpu::execute(cpu: *cpu) void = {
 			and_vx_vy(cpu, opcode);
 		case opcodes::XOR_VX_VY =>
 			xor_vx_vy(cpu, opcode);
+		case opcodes::ADD_VX_VY =>
+			add_vx_vy(cpu, opcode);
 		case =>
 			void;
 		};

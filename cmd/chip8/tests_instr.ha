@@ -309,3 +309,37 @@ use fmt;
 
 	assert(cpu.pc == 0xcafe);
 };
+
+@test fn add_vx_vy_carry() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v2 = 0xfe;
+	cpu.v3 = 0x02;
+
+	bus::write(cpu.bus, 0x00, 0x82);
+	bus::write(cpu.bus, 0x01, 0x34);
+
+	cpu::execute(cpu);
+
+	assert(cpu.v2 == 0x00);
+	assert(cpu.vf == 1);
+};
+
+@test fn add_vx_vy() void = {
+	let bus = bus { ... };
+	let cpu = cpu::cpu(&bus);
+	defer free(cpu);
+
+	cpu.v2 = 0xae;
+	cpu.v3 = 0x0f;
+
+	bus::write(cpu.bus, 0x00, 0x82);
+	bus::write(cpu.bus, 0x01, 0x34);
+
+	cpu::execute(cpu);
+
+	assert(cpu.v2 == 0xbd);
+	assert(cpu.vf == 0);
+};
