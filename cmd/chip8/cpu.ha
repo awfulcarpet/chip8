@@ -23,6 +23,8 @@ type opcodes = enum u16 {
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	DRW = 0xd000,
+	LD_DT_VX = 0xf015,
+	LD_ST_VX = 0xf018,
 	ADD_I_VX = 0xf01e,
 	LD_I_VX = 0xf055,
 	LD_VX_I = 0xf065,
@@ -53,8 +55,8 @@ type cpu = struct {
 	sp: u8,
 	pc: u16,
 
-	dtimer: u8, // delay timer
-	stimer: u8, // sound timer
+	dt: u8, // delay timer
+	st: u8, // sound timer
 
 	bus: *bus,
 };
@@ -80,7 +82,7 @@ fn cpu::log(cpu: *cpu) void = {
 	fmt::printfln("SP: {:.2x}", cpu.sp)!;
 	fmt::printfln("I: {:.4x}", cpu.i)!;
 
-	fmt::printfln("d: {:.2x} s: {:.2x}", cpu.dtimer, cpu.stimer)!;
+	fmt::printfln("d: {:.2x} s: {:.2x}", cpu.dt, cpu.st)!;
 
 	let opcode = read_opcode(cpu);
 	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
@@ -218,6 +220,12 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 			opcode & 0x0f)!;
 	case 0xf000 =>
 		switch (opcode & 0xf0ff) {
+		case opcodes::LD_DT_VX =>
+			return fmt::bsprintf(buf, "LD DT V{}",
+				(opcode & 0xf00) >> 8)!;
+		case opcodes::LD_ST_VX =>
+			return fmt::bsprintf(buf, "LD ST V{}",
+				(opcode & 0xf00) >> 8)!;
 		case opcodes::ADD_I_VX =>
 			return fmt::bsprintf(buf, "ADD I, V{}",
 				(opcode & 0xf00) >> 8)!;
@@ -456,6 +464,16 @@ fn add_i_vx(cpu: *cpu, opcode: u16) void = {
 	cpu.i += *vx;
 };
 
+fn ld_dt_vx(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	cpu.dt = *vx;
+};
+
+fn ld_st_vx(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	cpu.st = *vx;
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -514,6 +532,10 @@ fn cpu::execute(cpu: *cpu) void = {
 		drw_vx_vy_nib(cpu, opcode);
 	case 0xf000 =>
 		switch (opcode & 0xf0ff) {
+		case opcodes::LD_DT_VX =>
+			ld_dt_vx(cpu, opcode);
+		case opcodes::LD_ST_VX =>
+			ld_st_vx(cpu, opcode);
 		case opcodes::ADD_I_VX =>
 			add_i_vx(cpu, opcode);
 		case opcodes::LD_VX_I =>
