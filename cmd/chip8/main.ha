@@ -20,9 +20,9 @@ export fn main() void = {
 	cpu.pc = 0x200;
 	for (graphics.running) {
 		cpu::log(cpu);
+		graphics::update(graphics);
 		cpu::execute(cpu);
 
-		graphics::update(graphics);
 		graphics::draw(graphics);
 	};
 };

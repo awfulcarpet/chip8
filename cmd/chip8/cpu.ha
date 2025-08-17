@@ -87,6 +87,21 @@ fn cpu::log(cpu: *cpu) void = {
 
 	fmt::printfln("d: {:.2x} s: {:.2x}", cpu.dt, cpu.st)!;
 
+	for (let i = 0z; i < 3; i += 1) {
+		for (let j = 0z; j < 3; j += 1) {
+			fmt::printf("{} ",
+				bus::read(cpu.bus,
+					KEY + 1 + i: u16 * 3 + j: u16))!;
+		};
+		fmt::printf("{} \n", bus::read(cpu.bus, KEY + 0xc + i: u16))!;
+	};
+	fmt::printf("{} {} {} {}\n", bus::read(cpu.bus, KEY + 0x0a),
+		bus::read(cpu.bus, KEY + 0x0),
+		bus::read(cpu.bus, KEY + 0x0b),
+		bus::read(cpu.bus, KEY + 0x0f))!;
+
+	fmt::printf("\n")!;
+
 	let opcode = read_opcode(cpu);
 	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
 
@@ -574,7 +589,7 @@ fn cpu::execute(cpu: *cpu) void = {
 		case opcodes::SKP_VX =>
 			skp_vx(cpu, opcode);
 		case opcodes::SKNP_VX =>
-			skp_vx(cpu, opcode);
+			sknp_vx(cpu, opcode);
 		case =>
 			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 		};

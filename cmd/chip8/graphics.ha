@@ -53,6 +53,8 @@ fn graphics::update(graphics: *graphics) void = {
 	case SDL_EventType::QUIT =>
 		graphics.running = false;
 		return;
+	case SDL_EventType::KEYUP, SDL_EventType::KEYDOWN =>
+		input::handle(graphics.bus, ev.key);
 	case => void;
 	};
 };

@@ -7,7 +7,7 @@ use os;
 def ADR_MEM = 4096;
 def FB = 4096;
 def FB_LEN = SCREEN_WIDTH * SCREEN_HEIGHT;
-def KEY: u16 = FB + FB_LEN;
+def KEY: u16 = ADR_MEM + FB_LEN;
 def KEY_LEN = 16;
 
 type bus = struct {
