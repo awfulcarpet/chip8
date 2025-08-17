@@ -85,14 +85,15 @@ fn cpu::log(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	fmt::printf("{:.4x}:\t{:.4x}\t", cpu.pc, opcode)!;
 
-	let s = match (stropcode(opcode)) {
-	case invalid_opcode =>
-		fmt::fatalf("invalid opcode: {:.4x}", opcode);
-	case let s: str =>
-		yield s;
-	};
-
-	fmt::printfln("{}", s)!;
+	// let s = match (stropcode(opcode)) {
+	// case invalid_opcode =>
+	// 	void;
+	// 	fmt::fatalf("invalid opcode: {:.4x}", opcode);
+	// case let s: str =>
+	// 	yield s;
+	// };
+	//
+	// fmt::printfln("{}", s)!;
 
 	fmt::println("")!;
 	fmt::println("")!;
@@ -370,27 +371,29 @@ fn xor_vx_vy(cpu: *cpu, opcode: u16) void = {
 fn add_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+	let add: u16 = *vx: u16 + *vy: u16;
 
-	if (*vx: u16 + *vy: u16 > 0xff) {
+	*vx += *vy;
+
+	if (add > 0xff) {
 		cpu.vf = 1;
 	} else {
 		cpu.vf = 0;
 	};
 
-	*vx += *vy;
 };
 
 fn sub_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
 
-	if (*vx - *vy > *vx) {
+	*vx -= *vy;
+
+	if (*vx + *vy > *vx) {
 		cpu.vf = 1;
 	} else {
 		cpu.vf = 0;
 	};
-
-	*vx -= *vy;
 };
 
 
@@ -461,8 +464,7 @@ fn cpu::execute(cpu: *cpu) void = {
 		case opcodes::RET =>
 			ret(cpu, opcode);
 		case =>
-			void;
-			// fmt::fatalf("unimplemented opcode {:.4x}", opcode);
+			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 		};
 	case opcodes::JP_ADR & 0xf000 =>
 		jp(cpu, opcode);
@@ -499,7 +501,7 @@ fn cpu::execute(cpu: *cpu) void = {
 		case opcodes::SHL_VX_VY =>
 			shl_vx_vy(cpu, opcode);
 		case =>
-			void;
+			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 		};
 	case opcodes::SNE_VX_VY & 0xf000 =>
 		sne_vx_vy(cpu, opcode);
@@ -518,10 +520,9 @@ fn cpu::execute(cpu: *cpu) void = {
 		case opcodes::LD_B_VX =>
 			ld_b_vx(cpu, opcode);
 		case =>
-			void;
+			fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 		};
 	case =>
-		void;
-		// fmt::fatalf("unimplemented opcode {:.4x}", opcode);
+		fmt::fatalf("unimplemented opcode {:.4x}", opcode);
 	};
 };
