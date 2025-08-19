@@ -19,7 +19,7 @@ export fn main() void = {
 
 	defer graphics::freeres(graphics);
 
-	open(&bus, "roms/5-quirks.ch8");
+	open(&bus, "roms/6-keypad.ch8");
 
 	cpu.pc = 0x200;
 	let t = time::now(time::clock::PROCESS_CPU);
