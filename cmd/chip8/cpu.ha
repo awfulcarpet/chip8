@@ -547,10 +547,18 @@ fn jp_v0_adr(cpu: *cpu, opcode: u16) void = {
 
 fn ld_vx_k(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	static let keys: [16]bool = [false...];
+
 	for (let i = 0z; i <= 0xf; i += 1) {
 		if (bus::read(cpu.bus, KEY + i: u16) == 1) {
-			*vx = i: u8;
-			return;
+			keys[i] = true;
+		};
+		if (bus::read(cpu.bus, KEY + i: u16) == 0) {
+			if (keys[i] == true) {
+				keys[i] = false;
+				*vx = i: u8;
+				return;
+			};
 		};
 	};
 	cpu.pc -= 2; // infinite loop until key press
