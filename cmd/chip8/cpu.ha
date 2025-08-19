@@ -398,6 +398,7 @@ fn or_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
 
 	*vx |= *vy;
+	cpu.vf = 0;
 };
 
 fn and_vx_vy(cpu: *cpu, opcode: u16) void = {
@@ -405,6 +406,8 @@ fn and_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
 
 	*vx &= *vy;
+
+	cpu.vf = 0;
 };
 
 fn xor_vx_vy(cpu: *cpu, opcode: u16) void = {
@@ -412,6 +415,7 @@ fn xor_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
 
 	*vx ^= *vy;
+	cpu.vf = 0;
 };
 
 fn add_vx_vy(cpu: *cpu, opcode: u16) void = {
