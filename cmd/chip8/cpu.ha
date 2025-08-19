@@ -33,6 +33,7 @@ type opcodes = enum u16 {
 	LD_I_VX = 0xf055,
 	LD_VX_I = 0xf065,
 	LD_B_VX = 0xf033,
+	LD_VX_K = 0xf00a,
 };
 
 type invalid_opcode = !void;
@@ -256,6 +257,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 				(opcode & 0xf00) >> 8)!;
 		case opcodes::LD_DT_VX =>
 			return fmt::bsprintf(buf, "LD DT V{}",
+				(opcode & 0xf00) >> 8)!;
+		case opcodes::LD_VX_K =>
+			return fmt::bsprintf(buf, "LD V{}, K",
 				(opcode & 0xf00) >> 8)!;
 		case opcodes::LD_ST_VX =>
 			return fmt::bsprintf(buf, "LD ST V{}",
@@ -535,6 +539,17 @@ fn jp_v0_adr(cpu: *cpu, opcode: u16) void = {
 	cpu.pc = cpu.v0 + opcode & 0xfff;
 };
 
+fn ld_vx_k(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	for (let i = 0z; i <= 0xf; i += 1) {
+		if (bus::read(cpu.bus, KEY + i: u16) == 1) {
+			*vx = i: u8;
+			return;
+		};
+	};
+	cpu.pc -= 2; // infinite loop until key press
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -608,6 +623,8 @@ fn cpu::execute(cpu: *cpu) void = {
 			ld_vx_dt(cpu, opcode);
 		case opcodes::LD_DT_VX =>
 			ld_dt_vx(cpu, opcode);
+		case opcodes::LD_VX_K =>
+			ld_vx_k(cpu, opcode);
 		case opcodes::LD_ST_VX =>
 			ld_st_vx(cpu, opcode);
 		case opcodes::ADD_I_VX =>
