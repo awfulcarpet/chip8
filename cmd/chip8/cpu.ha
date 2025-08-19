@@ -449,15 +449,17 @@ fn sub_vx_vy(cpu: *cpu, opcode: u16) void = {
 
 fn shr_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
-	let tmp = *vx & 1;
-	*vx >>= 1;
+	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+	let tmp = *vy & 1;
+	*vx = *vy >> 1;
 	cpu.vf = tmp;
 };
 
 fn shl_vx_vy(cpu: *cpu, opcode: u16) void = {
 	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
-	let tmp = *vx >> 7;
-	*vx <<= 1;
+	let vy: *u8 = cpu::getreg(cpu, ((opcode & 0xf0) >> 4): u8);
+	let tmp = *vy >> 7;
+	*vx = *vy << 1;
 
 	cpu.vf = tmp;
 };
