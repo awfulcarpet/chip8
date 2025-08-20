@@ -1,6 +1,6 @@
-use fmt;
-use sdl2;
-use sdl2::{ SDL_Scancode };
+use sdl;
+use sdl = sdl::scancode;
+use sdl = sdl::events;
 
 type keypad = enum u8 {
 	ONE = 0x1,
@@ -24,43 +24,55 @@ type keypad = enum u8 {
 	V = 0xf,
 };
 
-fn input::handle(bus: *bus, ev: sdl2::SDL_KeyboardEvent) void = {
-	if (ev.repeat == 1)
-		return;
+fn input::handle(bus: *bus, ev: (sdl::key_pressed | sdl::key_released)) void = {
+	let scancode = sdl::scancode::UNKNOWN;
+	let state = 0u8;
 
-	switch (ev.keysym.scancode) {
-	case SDL_Scancode::ONE =>
-		bus::write(bus, KEY + keypad::ONE, ev.state);
-	case SDL_Scancode::TWO =>
-		bus::write(bus, KEY + keypad::TWO, ev.state);
-	case SDL_Scancode::THREE =>
-		bus::write(bus, KEY + keypad::THREE, ev.state);
-	case SDL_Scancode::FOUR =>
-		bus::write(bus, KEY + keypad::FOUR, ev.state);
-	case SDL_Scancode::Q =>
-		bus::write(bus, KEY + keypad::Q, ev.state);
-	case SDL_Scancode::W =>
-		bus::write(bus, KEY + keypad::W, ev.state);
-	case SDL_Scancode::E =>
-		bus::write(bus, KEY + keypad::E, ev.state);
-	case SDL_Scancode::R =>
-		bus::write(bus, KEY + keypad::R, ev.state);
-	case SDL_Scancode::A =>
-		bus::write(bus, KEY + keypad::A, ev.state);
-	case SDL_Scancode::S =>
-		bus::write(bus, KEY + keypad::S, ev.state);
-	case SDL_Scancode::D =>
-		bus::write(bus, KEY + keypad::D, ev.state);
-	case SDL_Scancode::F =>
-		bus::write(bus, KEY + keypad::F, ev.state);
-	case SDL_Scancode::Z =>
-		bus::write(bus, KEY + keypad::Z, ev.state);
-	case SDL_Scancode::X =>
-		bus::write(bus, KEY + keypad::X, ev.state);
-	case SDL_Scancode::C =>
-		bus::write(bus, KEY + keypad::C, ev.state);
-	case SDL_Scancode::V =>
-		bus::write(bus, KEY + keypad::V, ev.state);
+	if (ev is sdl::key_released) {
+		state = 0;
+		scancode = (ev as sdl::key_released).keysym.scancode;
+	};
+
+	if (ev is sdl::key_pressed) {
+		state = 1;
+		scancode = (ev as sdl::key_pressed).keysym.scancode;
+		if ((ev as sdl::key_pressed).repeat == true)
+		return;
+	};
+
+	switch (scancode) {
+	case sdl::scancode::_1=>
+		bus::write(bus, KEY + keypad::ONE, state);
+	case sdl::scancode::_2 =>
+		bus::write(bus, KEY + keypad::TWO, state);
+	case sdl::scancode::_3 =>
+		bus::write(bus, KEY + keypad::THREE, state);
+	case sdl::scancode::_4 =>
+		bus::write(bus, KEY + keypad::FOUR, state);
+	case sdl::scancode::Q =>
+		bus::write(bus, KEY + keypad::Q, state);
+	case sdl::scancode::W =>
+		bus::write(bus, KEY + keypad::W, state);
+	case sdl::scancode::E =>
+		bus::write(bus, KEY + keypad::E, state);
+	case sdl::scancode::R =>
+		bus::write(bus, KEY + keypad::R, state);
+	case sdl::scancode::A =>
+		bus::write(bus, KEY + keypad::A, state);
+	case sdl::scancode::S =>
+		bus::write(bus, KEY + keypad::S, state);
+	case sdl::scancode::D =>
+		bus::write(bus, KEY + keypad::D, state);
+	case sdl::scancode::F =>
+		bus::write(bus, KEY + keypad::F, state);
+	case sdl::scancode::Z =>
+		bus::write(bus, KEY + keypad::Z, state);
+	case sdl::scancode::X =>
+		bus::write(bus, KEY + keypad::X, state);
+	case sdl::scancode::C =>
+		bus::write(bus, KEY + keypad::C, state);
+	case sdl::scancode::V =>
+		bus::write(bus, KEY + keypad::V, state);
 	case =>
 		void;
 	};

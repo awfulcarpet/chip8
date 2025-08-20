@@ -1,6 +1,6 @@
 use fmt;
 use time;
-use sdl2;
+use sdl;
 
 def SEC_FRAME: f32 = 1.0/60.0;
 def CYC_PER_SEC = 700.0;
@@ -11,8 +11,8 @@ export fn main() void = {
 	defer free(cpu);
 
 	let graphics = match(graphics::init(&bus)) {
-	case let err: sdl2::error =>
-		fmt::fatalf("SDL2 err: {}", sdl2::strerror(err));
+	case let err: sdl::error =>
+		fmt::fatalf("sdl err: {}", sdl::strerror(err));
 	case let g: *graphics =>
 		yield g;
 	};
@@ -64,8 +64,8 @@ export fn main() void = {
 		defer free(cpu);
 
 		let graphics = match(graphics::init(&bus)) {
-		case let err: sdl2::error =>
-			fmt::fatalf("SDL2 err: {}", sdl2::strerror(err));
+		case let err: sdl::error =>
+			fmt::fatalf("sdl err: {}", sdl::strerror(err));
 		case let g: *graphics =>
 			yield g;
 		};
@@ -75,7 +75,7 @@ export fn main() void = {
 
 		cpu.pc = 0x200;
 		for (graphics.running) {
-			// cpu::log(cpu);
+			cpu::log(cpu);
 			cpu::execute(cpu);
 
 			graphics::update(graphics);

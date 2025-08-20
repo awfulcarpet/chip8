@@ -20,7 +20,7 @@ chip8: $(HARE_SOURCES)
 	$(HARE) build $(HAREFLAGS) $(HARELIBS) -o $@ cmd/$@/
 
 check:
-	$(HARE) test $(HAREFLAGS) $(HARELIBS)
+	$(HARE) test $(HAREFLAGS) $(HARELIBS) cmd/chip8
 
 clean:
 	rm -f chip8
