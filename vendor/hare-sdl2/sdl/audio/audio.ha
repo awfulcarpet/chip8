@@ -128,10 +128,10 @@ export fn get_audio_device_name(index: int, iscapture: int) (str | sdl::error) =
 	c::tostr(wrapptr(SDL_GetAudioDeviceName(index, iscapture))?: *c::char)!;
 
 //  This function is called when the audio device needs more data.
-// 
+//
 //  Once the callback returns, the buffer will no longer be valid. Stereo
 //  samples are stored in a LRLRLR ordering.
-// 
+//
 //  You can choose to avoid callbacks and use [[queue_audio]] instead, if you
 //  like. Just open your audio device with a null callback.
 export type audio_callback = fn(userdata: nullable *opaque, stream: *u8, len_: int) void;
@@ -191,7 +191,7 @@ export fn get_default_audio_info(iscapture: int) ((str, audio_spec) | sdl::error
 	if (SDL_GetDefaultAudioInfo(&n, &s: *SDL_AudioSpec, iscapture) != 0)
 		return c::tostr(SDL_GetError())!;
 	defer SDL_free(n);
-	return (strings::dup(c::tostr(n)!), s);
+	return (strings::dup(c::tostr(n)!)!, s);
 };
 
 // SDL audio device IDs.
@@ -272,7 +272,7 @@ export fn open_audio_device(
 ) (audio_device_id | sdl::error) = {
 	let d = match (device) {
 	case void => yield null;
-	case let s: str => yield c::fromstr(s);
+	case let s: str => yield c::fromstr(s)!;
 	};
 	defer free(d);
 	let id = SDL_OpenAudioDevice(d, iscapture, desired: *SDL_AudioSpec,
