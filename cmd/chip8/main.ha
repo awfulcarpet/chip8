@@ -1,12 +1,19 @@
 use fmt;
-use time;
 use sdl;
 use sdl = sdl::audio;
+use time;
+use os;
 
 def SEC_FRAME: f32 = 1.0/60.0;
 def CYC_PER_SEC = 700.0;
 
 export fn main() void = {
+	const rom = if (len(os::args) <= 1) {
+		fmt::fatalf("no rom specified");
+	} else {
+		yield os::args[1];
+	};
+
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
 	defer free(cpu);
@@ -20,7 +27,7 @@ export fn main() void = {
 
 	defer graphics::freeres(graphics);
 
-	open(&bus, "roms/6-keypad.ch8");
+	open(&bus, rom);
 
 	cpu.pc = 0x200;
 	let t = time::now(time::clock::PROCESS_CPU);

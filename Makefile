@@ -14,7 +14,7 @@ HARE_SOURCES != find . -name '*.ha'
 all: chip8
 
 run: chip8
-	./chip8
+	./chip8 roms/7-beep.ch8
 
 chip8: $(HARE_SOURCES)
 	$(HARE) build $(HAREFLAGS) $(HARELIBS) -o $@ cmd/$@/
