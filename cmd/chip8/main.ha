@@ -40,14 +40,15 @@ export fn main() void = {
 		d = time::now(time::clock::PROCESS_CPU);
 		let dt = time::diff(t, d): f32 / time::SECOND: f32;
 
-		for (let i = 0z; i < (CYC_PER_SEC * dt): uint; i += 1) {
-			cpu::log(cpu);
-			cpu::execute(cpu);
-			graphics::update(graphics);
-		};
 
 		if (dt: f32 < SEC_FRAME)
 			continue;
+
+		for (let i = 0z; i < (CYC_PER_SEC * dt): uint; i += 1) {
+			graphics::update(graphics);
+			cpu::log(cpu);
+			cpu::execute(cpu);
+		};
 
 		if (cpu.dt > 0) cpu.dt -= 1;
 		if (cpu.st > 0) cpu.st -= 1;
