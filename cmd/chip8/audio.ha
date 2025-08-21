@@ -1,15 +1,28 @@
 use sdl = sdl::audio;
 use math;
+use types;
 
 def SAMPLE_RATE = 48000;
+def SAMPLES = 4096;
+
+def A4 = 440.00;
+def VOLUME = 0.5;
+
+// returns next step for a sin wave of freq
+fn tone(freq: f32, vol: f32) f32 = {
+	static let cur: f32 = 0.0;
+	cur += (2.0 * math::PI): f32 / SAMPLE_RATE: f32 * freq;
+	return math::sinf64(cur): f32 * vol;
+};
+
 
 // caller must call close_audio_device
 fn audio::init() sdl::audio_device_id = {
 	let spec = sdl::audio_spec {
 		freq = SAMPLE_RATE,
-		format = sdl::audio_format::S16,
+		format = sdl::audio_format::F32,
 		channels = 1,
-		samples = 4096,
+		samples = SAMPLES,
 		callback = &play,
 		...
 	};
@@ -25,7 +38,8 @@ fn audio::close(id: sdl::audio_device_id) void = {
 };
 
 fn play(userdata: nullable *opaque, stream: *u8, len_: int) void = {
-	for (let i = 0z; i: int < len_; i += 1) {
-		(stream: *[*]u8)[i] = (math::sinf64(i: f64) * 100000.0): u8;
+	let fs = stream: *[*]f32;
+	for (let i = 0z; i: int < SAMPLES; i += 1) {
+		fs[i] = tone(A4, VOLUME);
 	};
 };
