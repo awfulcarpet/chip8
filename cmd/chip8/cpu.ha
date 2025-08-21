@@ -1,5 +1,7 @@
 use fmt;
 use strings;
+use math::random;
+use time;
 
 type opcodes = enum u16 {
 	CLS = 0x00e0,
@@ -23,12 +25,14 @@ type opcodes = enum u16 {
 	SNE_VX_VY = 0x9000,
 	LD_I_BYTE = 0xa000,
 	JP_V0_ADR = 0xb000,
+	RND_VX_BYTE = 0xc000,
 	DRW = 0xd000,
 	SKP_VX = 0xe09e,
 	SKNP_VX = 0xe0a1,
 	LD_VX_DT = 0xf007,
 	LD_DT_VX = 0xf015,
 	LD_ST_VX = 0xf018,
+	LD_F_VX = 0xf029,
 	ADD_I_VX = 0xf01e,
 	LD_I_VX = 0xf055,
 	LD_VX_I = 0xf065,
@@ -65,10 +69,12 @@ type cpu = struct {
 
 	bus: *bus,
 };
+let r: math::random::random = 0;
 
 // returns a heap allocated cpu struct.
 fn cpu::cpu(bus: *bus) *cpu = {
 	let cpu: *cpu = alloc(cpu { bus = bus, ... })!;
+	r = math::random::init(time::now(time::clock::BOOT).sec: u64);
 
 	return cpu;
 };
@@ -235,6 +241,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 		return fmt::bsprintf(buf, "LD I, {:.4x}", opcode & 0xfff)!;
 	case opcodes::JP_V0_ADR & 0xf000 =>
 		return fmt::bsprintf(buf, "JP V0, {:.4x}", opcode & 0xfff)!;
+	case opcodes::RND_VX_BYTE & 0xf000 =>
+		return fmt::bsprintf(buf, "RND V{}, {:.2x}",
+			(opcode & 0xf00) >> 8, opcode & 0x0f)!;
 	case opcodes::DRW & 0xf000 =>
 		return fmt::bsprintf(buf, "DRW V{}, V{}, {:.1x}",
 			(opcode & 0xf00) >> 8, (opcode & 0xf0) >> 4,
@@ -263,6 +272,9 @@ fn stropcode(opcode: u16) (str | !invalid_opcode) = {
 				(opcode & 0xf00) >> 8)!;
 		case opcodes::LD_ST_VX =>
 			return fmt::bsprintf(buf, "LD ST V{}",
+				(opcode & 0xf00) >> 8)!;
+		case opcodes::LD_F_VX =>
+			return fmt::bsprintf(buf, "LD F, V{}",
 				(opcode & 0xf00) >> 8)!;
 		case opcodes::ADD_I_VX =>
 			return fmt::bsprintf(buf, "ADD I, V{}",
@@ -563,6 +575,10 @@ fn ld_vx_k(cpu: *cpu, opcode: u16) void = {
 	};
 	cpu.pc -= 2; // infinite loop until key press
 };
+fn ld_f_vx(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	cpu.i = 0x50 + *vx * 5;
+};
 
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
@@ -620,6 +636,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		ld_i_byte(cpu, opcode);
 	case opcodes::JP_V0_ADR & 0xf000 =>
 		jp_v0_adr(cpu, opcode);
+	// case opcodes::RND_VX_BYTE & 0xf000 =>
+	// 	rnd_vx_byte(cpu, opcode);
 	case opcodes::DRW =>
 		drw_vx_vy_nib(cpu, opcode);
 	case 0xe000 =>
@@ -635,14 +653,16 @@ fn cpu::execute(cpu: *cpu) void = {
 		switch (opcode & 0xf0ff) {
 		case opcodes::LD_VX_DT =>
 			ld_vx_dt(cpu, opcode);
-		case opcodes::LD_DT_VX =>
-			ld_dt_vx(cpu, opcode);
 		case opcodes::LD_VX_K =>
 			ld_vx_k(cpu, opcode);
+		case opcodes::LD_DT_VX =>
+			ld_dt_vx(cpu, opcode);
 		case opcodes::LD_ST_VX =>
 			ld_st_vx(cpu, opcode);
 		case opcodes::ADD_I_VX =>
 			add_i_vx(cpu, opcode);
+		case opcodes::LD_F_VX =>
+			ld_f_vx(cpu, opcode);
 		case opcodes::LD_VX_I =>
 			ld_vx_i(cpu, opcode);
 		case opcodes::LD_I_VX =>
