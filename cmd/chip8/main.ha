@@ -1,6 +1,7 @@
 use fmt;
 use time;
 use sdl;
+use sdl = sdl::audio;
 
 def SEC_FRAME: f32 = 1.0/60.0;
 def CYC_PER_SEC = 700.0;
@@ -24,6 +25,10 @@ export fn main() void = {
 	cpu.pc = 0x200;
 	let t = time::now(time::clock::PROCESS_CPU);
 	let d = t;
+
+	let dev = audio::init();
+	defer sdl::close_audio_device(dev);
+
 	for (graphics.running) {
 		d = time::now(time::clock::PROCESS_CPU);
 		let dt = time::diff(t, d): f32 / time::SECOND: f32;
