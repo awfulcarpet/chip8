@@ -44,8 +44,8 @@ export fn main() void = {
 		if (dt: f32 < SEC_FRAME)
 			continue;
 
+		graphics::update(graphics);
 		for (let i = 0z; i < (CYC_PER_SEC * dt): uint; i += 1) {
-			graphics::update(graphics);
 			cpu::log(cpu);
 			cpu::execute(cpu);
 		};
