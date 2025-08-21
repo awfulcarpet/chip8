@@ -52,6 +52,8 @@ export fn main() void = {
 		if (cpu.dt > 0) cpu.dt -= 1;
 		if (cpu.st > 0) cpu.st -= 1;
 
+		sdl::pause_audio_device(dev, cpu.st == 0);
+
 		graphics::draw(graphics);
 
 		t = time::now(time::clock::PROCESS_CPU);
