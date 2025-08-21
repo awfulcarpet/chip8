@@ -74,7 +74,7 @@ let r: math::random::random = 0;
 // returns a heap allocated cpu struct.
 fn cpu::cpu(bus: *bus) *cpu = {
 	let cpu: *cpu = alloc(cpu { bus = bus, ... })!;
-	r = math::random::init(time::now(time::clock::BOOT).sec: u64);
+	r = math::random::init(time::now(time::clock::BOOT).nsec: u64);
 
 	return cpu;
 };
@@ -580,6 +580,13 @@ fn ld_f_vx(cpu: *cpu, opcode: u16) void = {
 	cpu.i = 0x50 + *vx * 5;
 };
 
+fn rnd_vx_byte(cpu: *cpu, opcode: u16) void = {
+	let vx: *u8 = cpu::getreg(cpu, ((opcode & 0xf00) >> 8): u8);
+	let rand: u8 = (math::random::next(&r) % 256): u8;
+
+	*vx = rand & (opcode & 0xff): u8;
+};
+
 fn cpu::execute(cpu: *cpu) void = {
 	let opcode = read_opcode(cpu);
 	cpu.pc += 2;
@@ -636,8 +643,8 @@ fn cpu::execute(cpu: *cpu) void = {
 		ld_i_byte(cpu, opcode);
 	case opcodes::JP_V0_ADR & 0xf000 =>
 		jp_v0_adr(cpu, opcode);
-	// case opcodes::RND_VX_BYTE & 0xf000 =>
-	// 	rnd_vx_byte(cpu, opcode);
+	case opcodes::RND_VX_BYTE & 0xf000 =>
+		rnd_vx_byte(cpu, opcode);
 	case opcodes::DRW =>
 		drw_vx_vy_nib(cpu, opcode);
 	case 0xe000 =>
