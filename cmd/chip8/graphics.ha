@@ -5,7 +5,7 @@ use sdl = sdl::events;
 
 def SCREEN_WIDTH = 64;
 def SCREEN_HEIGHT = 32;
-def SCALE = 25;
+def DEFAULT_SCALE: f32 = 25.0;
 
 type graphics = struct {
 	bus: *bus,
@@ -33,13 +33,13 @@ def FONT = [
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
-fn graphics::init(bus: *bus) (*graphics | sdl::error) = {
+fn graphics::init(bus: *bus, scale: f32) (*graphics | sdl::error) = {
 	sdl::init(sdl::init_flags::VIDEO | sdl::init_flags::AUDIO)!;
 	const win = sdl::create_window("Hare SDL2 demo",
 		sdl::WINDOWPOS_CENTERED, sdl::WINDOWPOS_CENTERED,
-		SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, 0)?;
+		SCREEN_WIDTH * scale: int, SCREEN_HEIGHT * scale: int, 0)?;
 	const render = sdl::create_renderer(win, -1, 0)?;
-	sdl::render_set_scale(render, SCALE: f32, SCALE: f32)?;
+	sdl::render_set_scale(render, scale, scale)?;
 
 	let g = alloc(graphics {
 		bus = bus,
@@ -47,12 +47,6 @@ fn graphics::init(bus: *bus) (*graphics | sdl::error) = {
 		render = render,
 		running = true,
 	})!;
-	// for (let i = 0; i < SCREEN_HEIGHT; i += 1) {
-	// 	for (let j = 0; j < SCREEN_WIDTH; j += 1) {
-	// 			sdl::SDL_SetRenderDrawColor(g.render, 255, 255, 255, 0)!;
-	// 		sdl::SDL_RenderDrawPoint(g.render, j, i)!;
-	// 	};
-	// };
 
 	for (let i = 0x050; i <= 0x09f; i += 1) {
 		bus::write(bus, i: u16, FONT[i - 0x050]: u8);

@@ -2,6 +2,7 @@ use fmt;
 use getopt;
 use sdl;
 use sdl = sdl::audio;
+use strconv;
 use time;
 use os;
 
@@ -11,17 +12,29 @@ def CYC_PER_SEC = 700.0;
 export fn main() void = {
 	const help: []getopt::help = [
 		"chip8 emulator",
+		('s', "scale", "set graphics scale"),
 		"rom",
 	];
 
 	const cmd = getopt::parse(os::args, help...);
 	defer getopt::finish(&cmd);
 
-	const rom = "";
-	const scale = 1.0;
+	const scale = DEFAULT_SCALE;
 
 	for (const (opt, param) .. cmd.opts) {
 		switch (opt) {
+		case 's' =>
+			scale = match (strconv::stof32(param)) {
+			case strconv::invalid =>
+				fmt::fatalf("err: scale is not a float");
+			case strconv::overflow =>
+				fmt::fatalf("err: scale is not a float");
+			case let f: f32 =>
+				if (f <= 0.0) {
+					fmt::fatalf("err: scale must be positive");
+				};
+				yield f;
+			};
 		case =>
 			abort();
 		};
@@ -32,13 +45,13 @@ export fn main() void = {
 		os::exit(1);
 	};
 
-	rom = cmd.args[0];
+	const rom = cmd.args[0];
 
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
 	defer free(cpu);
 
-	let graphics = match(graphics::init(&bus)) {
+	let graphics = match (graphics::init(&bus, scale)) {
 	case let err: sdl::error =>
 		fmt::fatalf("sdl err: {}", sdl::strerror(err));
 	case let g: *graphics =>
