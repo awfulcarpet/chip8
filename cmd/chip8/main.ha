@@ -1,4 +1,5 @@
 use fmt;
+use getopt;
 use sdl;
 use sdl = sdl::audio;
 use time;
@@ -8,11 +9,30 @@ def SEC_FRAME: f32 = 1.0/60.0;
 def CYC_PER_SEC = 700.0;
 
 export fn main() void = {
-	const rom = if (len(os::args) <= 1) {
-		fmt::fatalf("no rom specified");
-	} else {
-		yield os::args[1];
+	const help: []getopt::help = [
+		"chip8 emulator",
+		"rom",
+	];
+
+	const cmd = getopt::parse(os::args, help...);
+	defer getopt::finish(&cmd);
+
+	const rom = "";
+	const scale = 1.0;
+
+	for (const (opt, param) .. cmd.opts) {
+		switch (opt) {
+		case =>
+			abort();
+		};
 	};
+
+	if (len(cmd.args) != 1) {
+		getopt::printhelp(os::stderr, "chip8", help)!;
+		os::exit(1);
+	};
+
+	rom = cmd.args[0];
 
 	let bus = bus { ... };
 	let cpu = cpu::cpu(&bus);
@@ -59,43 +79,4 @@ export fn main() void = {
 
 		t = time::now(time::clock::PROCESS_CPU);
 	};
-};
-
-@test fn test_suite() void = {
-	let roms = [
-		"roms/1-chip8-logo.ch8",
-		"roms/2-ibm-logo.ch8",
-		"roms/3-corax+.ch8",
-		"roms/4-flags.ch8",
-		"roms/5-quirks.ch8",
-		"roms/6-keypad.ch8",
-		"roms/7-beep.ch8",
-		"roms/8-scrolling.ch8",
-	];
-
-	for (let i = 0z; i < len(roms); i += 1) {
-		let bus = bus { ... };
-		let cpu = cpu::cpu(&bus);
-		defer free(cpu);
-
-		let graphics = match(graphics::init(&bus)) {
-		case let err: sdl::error =>
-			fmt::fatalf("sdl err: {}", sdl::strerror(err));
-		case let g: *graphics =>
-			yield g;
-		};
-		defer graphics::freeres(graphics);
-
-		open(&bus, roms[i]);
-
-		cpu.pc = 0x200;
-		for (graphics.running) {
-			cpu::log(cpu);
-			cpu::execute(cpu);
-
-			graphics::update(graphics);
-			graphics::draw(graphics);
-		};
-	};
-	assert(true);
 };
