@@ -6,13 +6,15 @@ use strconv;
 use time;
 use os;
 
-def SEC_FRAME: f32 = 1.0/60.0;
-def CYC_PER_SEC = 700.0;
+def FRAME_RATE = 60.0;
+def SEC_FRAME: f32 = 1.0/FRAME_RATE;
+def DEFAULT_CYC_PER_SEC = 700.0;
 
 export fn main() void = {
 	const help: []getopt::help = [
 		"chip8 emulator",
 		('s', "scale", "set graphics scale"),
+		('c', "speed", "set clock speed (per sec)"),
 		"rom",
 	];
 
@@ -20,6 +22,7 @@ export fn main() void = {
 	defer getopt::finish(&cmd);
 
 	const scale = DEFAULT_SCALE;
+	const clock_speed = DEFAULT_CYC_PER_SEC;
 
 	for (const (opt, param) .. cmd.opts) {
 		switch (opt) {
@@ -32,6 +35,18 @@ export fn main() void = {
 			case let f: f32 =>
 				if (f <= 0.0) {
 					fmt::fatalf("err: scale must be positive");
+				};
+				yield f;
+			};
+		case 'c' =>
+			clock_speed = match (strconv::stof32(param)) {
+			case strconv::invalid =>
+				fmt::fatalf("err: clock speed is not a float");
+			case strconv::overflow =>
+				fmt::fatalf("err: clock speed is not a float");
+			case let f: f32 =>
+				if (f <= FRAME_RATE) {
+					fmt::fatalf("err: clock speed must be greater than {}", FRAME_RATE);
 				};
 				yield f;
 			};
@@ -69,6 +84,7 @@ export fn main() void = {
 	let dev = audio::init();
 	defer sdl::close_audio_device(dev);
 
+
 	for (graphics.running) {
 		d = time::now(time::clock::PROCESS_CPU);
 		let dt = time::diff(t, d): f32 / time::SECOND: f32;
@@ -78,7 +94,7 @@ export fn main() void = {
 			continue;
 
 		graphics::update(graphics);
-		for (let i = 0z; i < (CYC_PER_SEC * dt): uint; i += 1) {
+		for (let i = 0z; i < (clock_speed * dt): uint; i += 1) {
 			cpu::log(cpu);
 			cpu::execute(cpu);
 		};
