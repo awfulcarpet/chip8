@@ -23,6 +23,7 @@ controls will vary by game but the following keys map to the following keypad
 | Q  | W  | E  | R  |
 | A  | S  | D  | F  |
 | Z  | X  | C  | V  |
+
 | Mapping | |     |     |
 | :-: | :-: | :-: | :-: |
 | 1  | 2  | 3  | C  |
