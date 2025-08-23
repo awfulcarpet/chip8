@@ -17,14 +17,14 @@ $ chip8 -h # print help and flags
 
 ## Controls
 controls will vary by game but the following keys map to the following keypad
-| Key | |
-| :------ | :---- |
+| Key |     |     |     |
+| :-: | :-: | :-: | :-: |
 | 1  | 2  | 3  | 4  |
 | Q  | W  | E  | R  |
 | A  | S  | D  | F  |
 | Z  | X  | C  | V  |
-| Mapping | |
-| :------ | :---- |
+| Mapping | |     |     |
+| :-: | :-: | :-: | :-: |
 | 1  | 2  | 3  | C  |
 | 4  | 5  | 6  | D  |
 | 7  | 8  | 9  | E  |
