@@ -15,6 +15,8 @@ export fn main() void = {
 		"chip8 emulator",
 		('s', "scale", "set graphics scale (default 25.0)"),
 		('c', "speed", "set clock speed per sec (default 700.0)"),
+		('t', "freq", "set sound/tone frequency (default 440.0)"),
+		('v', "volume", "set tone volume 0.0-1.0 (default 0.5)"),
 		"rom",
 	];
 
@@ -23,6 +25,8 @@ export fn main() void = {
 
 	const scale = DEFAULT_SCALE;
 	const clock_speed = DEFAULT_CYC_PER_SEC;
+	const freq: f32 = A4;
+	const vol: f32 = VOLUME;
 
 	for (const (opt, param) .. cmd.opts) {
 		switch (opt) {
@@ -47,6 +51,30 @@ export fn main() void = {
 			case let f: f32 =>
 				if (f <= FRAME_RATE) {
 					fmt::fatalf("err: clock speed must be greater than {}", FRAME_RATE);
+				};
+				yield f;
+			};
+		case 't' =>
+			freq = match (strconv::stof32(param)) {
+			case strconv::invalid =>
+				fmt::fatalf("err: frequency is not a float");
+			case strconv::overflow =>
+				fmt::fatalf("err: frequency is not a float");
+			case let f: f32 =>
+				if (f <= 0.0) {
+					fmt::fatalf("err: frequency must be positive");
+				};
+				yield f;
+			};
+		case 'v' =>
+			vol = match (strconv::stof32(param)) {
+			case strconv::invalid =>
+				fmt::fatalf("err: volume is not a float");
+			case strconv::overflow =>
+				fmt::fatalf("err: volume is not a float");
+			case let f: f32 =>
+				if (f < 0.0 || f > 1.0) {
+					fmt::fatalf("err: volume must be between 0 and 1");
 				};
 				yield f;
 			};
@@ -81,7 +109,7 @@ export fn main() void = {
 	let t = time::now(time::clock::PROCESS_CPU);
 	let d = t;
 
-	let dev = audio::init();
+	let dev = audio::init(freq, vol);
 	defer sdl::close_audio_device(dev);
 
 
