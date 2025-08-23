@@ -17,8 +17,6 @@ type bus = struct {
 };
 
 fn bus::write(bus: *bus, adr: u16, data: u8) void = {
-	assert (adr < ADR_MEM + FB_LEN + KEY_LEN);
-
 	if (adr < ADR_MEM) {
 		bus.ram[adr] = data;
 		return;
@@ -31,11 +29,11 @@ fn bus::write(bus: *bus, adr: u16, data: u8) void = {
 
 	if (adr < ADR_MEM + FB_LEN + KEY_LEN) {
 		bus.key[adr - KEY] = data;
+		return;
 	};
 };
 
 fn bus::read(bus: *bus, adr: u16) u8 = {
-	assert (adr < ADR_MEM + FB_LEN + KEY_LEN);
 
 	if (adr < ADR_MEM) {
 		return bus.ram[adr];
@@ -49,7 +47,6 @@ fn bus::read(bus: *bus, adr: u16) u8 = {
 		return bus.key[adr - KEY];
 	};
 
-	assert(false, "bus read adr is out of bounds");
 	return 0xff;
 };
 
