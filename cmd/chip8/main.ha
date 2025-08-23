@@ -13,8 +13,8 @@ def DEFAULT_CYC_PER_SEC = 700.0;
 export fn main() void = {
 	const help: []getopt::help = [
 		"chip8 emulator",
-		('s', "scale", "set graphics scale"),
-		('c', "speed", "set clock speed (per sec)"),
+		('s', "scale", "set graphics scale (default 25.0)"),
+		('c', "speed", "set clock speed per sec (default 700.0)"),
 		"rom",
 	];
 
